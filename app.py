@@ -1,4 +1,5 @@
-import streamlit as st
+# Função para carregar dados do Google Sheets
+@st.cache_data(ttl=300)  # Cache por 5 minutosimport streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -52,19 +53,31 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Função para carregar dados do Google Sheets
-@st.cache_data(ttl=300)  # Cache por 5 minutos
 def load_symbols_from_sheets(sheet_url):
     """Carrega símbolos do Google Sheets"""
     try:
         # Converter URL para formato CSV
         if '/edit' in sheet_url:
-            csv_url = sheet_url.replace('/edit#gid=', '/export?format=csv&gid=')
-            csv_url = csv_url.replace('/edit', '/export?format=csv')
+            # Extrair o ID da planilha e GID
+            sheet_id = sheet_url.split('/d/')[1].split('/')[0]
+            
+            # Extrair GID se existir
+            if 'gid=' in sheet_url:
+                gid = sheet_url.split('gid=')[1].split('#')[0].split('&')[0]
+                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+            else:
+                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
         else:
             csv_url = sheet_url
         
-        df = pd.read_csv(csv_url)
+        # Tentar carregar com diferentes encodings
+        try:
+            df = pd.read_csv(csv_url, encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(csv_url, encoding='latin1')
+        except:
+            # Se ainda falhar, tentar sem especificar encoding
+            df = pd.read_csv(csv_url)
         
         # Renomear Column 1 para Tag se existir
         if 'Column 1' in df.columns:
@@ -77,9 +90,13 @@ def load_symbols_from_sheets(sheet_url):
         # Limpar dados
         df = df.fillna("")
         
+        # Remover linhas completamente vazias
+        df = df.dropna(how='all')
+        
         return df
     except Exception as e:
         st.error(f"Erro ao carregar Google Sheets: {e}")
+        st.info("💡 Dica: Verifique se a planilha está pública (qualquer pessoa com link pode visualizar)")
         return None
 
 # Função para validar ticker
