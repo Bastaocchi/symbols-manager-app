@@ -192,6 +192,8 @@ def add_symbol_to_sheet(symbol_data):
     except Exception as e:
         st.error(f"Erro ao adicionar símbolo: {str(e)}")
         return False
+
+def update_tag(symbol, tag_value):
     records = worksheet.get_all_records()
     df = pd.DataFrame(records)
 
@@ -213,7 +215,7 @@ def add_symbol_to_sheet(symbol_data):
 # MAIN APP
 # =========================
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    st.markdown('<h6 style="text-align:left; font-size:1rem; margin-bottom:1rem; color: #ccc;">Gerenciador de Símbolos</h6>', unsafe_allow_html=True)
 
     # Botão Recarregar
     if st.button("🔄 Recarregar Planilha"):
@@ -338,7 +340,6 @@ def main():
                 else:
                     sector_spdr_value = selected_sector  # Salva "XLV - Health Care"
                 
-                etf_symbol = ""  # Não usar mais o ETF_Symbol separado
                 tags = st.text_input("Tags", placeholder="Ex: tech, growth")
             
             st.markdown("**Campos obrigatórios marcados com ***")
