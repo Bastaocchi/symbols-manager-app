@@ -91,6 +91,25 @@ div.stButton > button:hover {
 .stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
     color: #aaa !important;
 }
+
+/* Aumentar fonte dos formulários */
+.stTextInput > div > div > input,
+.stSelectbox > div > div > div,
+.stNumberInput > div > div > input {
+    font-size: 18px !important;
+    font-family: 'Segoe UI', sans-serif !important;
+}
+
+.stTextInput label,
+.stSelectbox label,
+.stNumberInput label {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+}
+
+.stForm {
+    font-size: 16px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -107,6 +126,22 @@ worksheet = client.open_by_key(SHEET_ID).sheet1  # primeira aba
 # =========================
 # FUNÇÕES AUXILIARES
 # =========================
+# Mapeamento de setores SPDR com números
+SECTOR_MAPPING = {
+    "": {"number": 0, "name": "Não selecionado"},
+    "XLC": {"number": 1, "name": "Communication Services"},
+    "XLY": {"number": 2, "name": "Consumer Discretionary"},
+    "XLP": {"number": 3, "name": "Consumer Staples"},
+    "XLE": {"number": 4, "name": "Energy"},
+    "XLF": {"number": 5, "name": "Financials"},
+    "XLV": {"number": 6, "name": "Health Care"},
+    "XLI": {"number": 7, "name": "Industrials"},
+    "XLB": {"number": 8, "name": "Materials"},
+    "XLRE": {"number": 9, "name": "Real Estate"},
+    "XLK": {"number": 10, "name": "Technology"},
+    "XLU": {"number": 11, "name": "Utilities"}
+}
+
 def normalize_text(text):
     """Remove acentos e converte para minúsculo para busca flexível"""
     if pd.isna(text):
@@ -288,13 +323,34 @@ def main():
                 tradingview_industry = st.text_input("TradingView Indústria", placeholder="Ex: Consumer Electronics")
                 
             with col2:
-                sector_spdr = st.selectbox(
+                # Selectbox para setores SPDR com nomes descritivos
+                sector_options = [f"{code} - {info['name']}" if code else "Não selecionado" 
+                                for code, info in SECTOR_MAPPING.items()]
+                
+                selected_sector = st.selectbox(
                     "Setor SPDR",
-                    [""] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else [""],
-                    help="Selecione um setor existente ou deixe em branco"
+                    sector_options,
+                    help="Selecione um setor SPDR - o número será preenchido automaticamente"
                 )
+                
+                # Extrair o código do setor selecionado
+                if selected_sector == "Não selecionado":
+                    sector_code = ""
+                    sector_number = 0
+                else:
+                    sector_code = selected_sector.split(" - ")[0]
+                    sector_number = SECTOR_MAPPING[sector_code]["number"]
+                
                 etf_symbol = st.text_input("ETF Symbol", placeholder="Ex: XLK")
-                sector_number = st.number_input("Sector Number", min_value=0, max_value=99, value=0)
+                
+                # Mostrar o número do setor (apenas leitura)
+                st.text_input(
+                    "Sector Number", 
+                    value=str(sector_number), 
+                    disabled=True,
+                    help="Número preenchido automaticamente baseado no setor SPDR selecionado"
+                )
+                
                 tags = st.text_input("Tags", placeholder="Ex: tech, growth")
             
             st.markdown("**Campos obrigatórios marcados com ***")
@@ -321,7 +377,7 @@ def main():
                         'Company': company.strip(),
                         'TradingView_Sector': tradingview_sector.strip(),
                         'TradingView_Industry': tradingview_industry.strip(),
-                        'Sector_SPDR': sector_spdr,
+                        'Sector_SPDR': sector_code,
                         'ETF_Symbol': etf_symbol.upper().strip() if etf_symbol.strip() else "",
                         'Sector_Number': sector_number,
                         'TAGS': tags.strip()
