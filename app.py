@@ -61,7 +61,7 @@ def get_ticker_info(symbol):
     except:
         return None
 
-# ===== Renderizador customizado para Visualizar =====
+# ===== Renderizador customizado =====
 def render_html_table_visualizar(df):
     html_table = df.to_html(escape=False, index=False)
 
@@ -69,7 +69,7 @@ def render_html_table_visualizar(df):
     html_table = html_table.replace(
         '<table',
         '<table style="width:100%; border-collapse:collapse; border:none !important; '
-        'outline:none !important; font-family: Segoe UI, Roboto, Helvetica Neue, sans-serif;"'
+        'outline:none !important; font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
     )
 
     # Cabeçalho
@@ -77,17 +77,19 @@ def render_html_table_visualizar(df):
         '<th',
         '<th style="font-size:20px; font-weight:bold; padding:12px; '
         'background-color:#2a323b; color:white; text-align:center; '
-        'border:none !important; outline:none !important;"'
+        'border:none !important; outline:none !important; '
+        'font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
     )
 
     # Células
     html_table = html_table.replace(
         '<td',
         '<td style="font-size:18px; padding:10px; text-align:center; '
-        'color:#eee; border:none !important; outline:none !important;"'
+        'color:#eee; border:none !important; outline:none !important; '
+        'font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
     )
 
-    # Alternar cor das linhas (zebra personalizada)
+    # Alternar cor das linhas (zebra)
     rows = html_table.split("<tr>")
     for i in range(1, len(rows)):
         if i % 2 == 1:  # ímpar → escuro
@@ -99,11 +101,12 @@ def render_html_table_visualizar(df):
     # Ajuste colunas
     html_table = html_table.replace(
         '<th>Company</th>',
-        '<th style="width:150px;">Company</th>'
+        '<th style="min-width:150px; max-width:150px; width:150px !important;">Company</th>'
     )
     html_table = html_table.replace(
         '<th>Tag</th>',
-        '<th style="width:220px; font-size:22px; color:#ffcc00;">Tag</th>'
+        '<th style="min-width:220px; max-width:220px; width:220px !important; '
+        'font-size:22px; color:#ffcc00;">Tag</th>'
     )
 
     return html_table
