@@ -120,7 +120,33 @@ def load_symbols():
 
     return df
 
-def update_tag(symbol, tag_value):
+def add_symbol_to_sheet(symbol_data):
+    """Adiciona um novo símbolo à planilha"""
+    try:
+        # Obter dados atuais para pegar as colunas
+        current_data = worksheet.get_all_records()
+        df_current = pd.DataFrame(current_data)
+        
+        if len(df_current) == 0:
+            st.error("Não foi possível obter a estrutura da planilha")
+            return False
+            
+        # Criar nova linha com os dados
+        new_row = []
+        for col in df_current.columns:
+            if col in symbol_data:
+                new_row.append(symbol_data[col])
+            else:
+                new_row.append("")  # Valor vazio para colunas não fornecidas
+        
+        # Adicionar a nova linha na planilha
+        worksheet.append_row(new_row)
+        st.success(f"Símbolo {symbol_data.get('Symbol', 'N/A')} adicionado com sucesso!")
+        return True
+        
+    except Exception as e:
+        st.error(f"Erro ao adicionar símbolo: {str(e)}")
+        return False
     records = worksheet.get_all_records()
     df = pd.DataFrame(records)
 
@@ -227,10 +253,95 @@ def main():
             # Tabela sem container de scroll - rola junto com a página
             st.markdown(html_table, unsafe_allow_html=True)
 
-    # TAB ADICIONAR (rascunho)
+    # TAB ADICIONAR
     with tab2:
         st.subheader("Adicionar Novo Símbolo")
-        st.info("Funcionalidade em construção")
+        
+        # Formulário para adicionar novo símbolo
+        with st.form("add_symbol_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                symbol = st.text_input("Símbolo *", placeholder="Ex: AAPL")
+                company = st.text_input("Nome da Empresa *", placeholder="Ex: Apple Inc")
+                tradingview_sector = st.text_input("TradingView Setor", placeholder="Ex: Technology")
+                tradingview_industry = st.text_input("TradingView Indústria", placeholder="Ex: Consumer Electronics")
+                
+            with col2:
+                sector_spdr = st.selectbox(
+                    "Setor SPDR",
+                    [""] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else [""],
+                    help="Selecione um setor existente ou deixe em branco"
+                )
+                etf_symbol = st.text_input("ETF Symbol", placeholder="Ex: XLK")
+                sector_number = st.number_input("Sector Number", min_value=0, max_value=99, value=0)
+                tags = st.text_input("Tags", placeholder="Ex: tech, growth")
+            
+            st.markdown("**Campos obrigatórios marcados com ***")
+            
+            # Botões do formulário
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                submitted = st.form_submit_button("✅ Adicionar Símbolo", use_container_width=True)
+            with col_btn2:
+                clear_form = st.form_submit_button("🗑️ Limpar Formulário", use_container_width=True)
+            
+            if submitted:
+                # Validação dos campos obrigatórios
+                if not symbol.strip():
+                    st.error("❌ Campo 'Símbolo' é obrigatório!")
+                elif not company.strip():
+                    st.error("❌ Campo 'Nome da Empresa' é obrigatório!")
+                elif symbol.upper() in df['Symbol'].str.upper().values:
+                    st.error(f"❌ Símbolo '{symbol.upper()}' já existe na planilha!")
+                else:
+                    # Preparar dados para adicionar
+                    symbol_data = {
+                        'Symbol': symbol.upper().strip(),
+                        'Company': company.strip(),
+                        'TradingView_Sector': tradingview_sector.strip(),
+                        'TradingView_Industry': tradingview_industry.strip(),
+                        'Sector_SPDR': sector_spdr,
+                        'ETF_Symbol': etf_symbol.upper().strip() if etf_symbol.strip() else "",
+                        'Sector_Number': sector_number,
+                        'TAGS': tags.strip()
+                    }
+                    
+                    # Adicionar à planilha
+                    if add_symbol_to_sheet(symbol_data):
+                        st.balloons()
+                        st.info("💡 Clique em 'Recarregar Planilha' no topo da página para ver o novo símbolo na lista")
+            
+            if clear_form:
+                st.rerun()
+        
+        # Seção de informações
+        st.markdown("---")
+        st.subheader("ℹ️ Informações")
+        
+        col_info1, col_info2 = st.columns(2)
+        with col_info1:
+            st.markdown("""
+            **Campos Obrigatórios:**
+            - **Símbolo**: Código do ativo (ex: AAPL, MSFT)
+            - **Nome da Empresa**: Nome completo da empresa
+            """)
+            
+        with col_info2:
+            st.markdown("""
+            **Dicas:**
+            - Use símbolos em MAIÚSCULO
+            - Verifique se o símbolo já não existe
+            - Preencha o máximo de campos possível
+            """)
+        
+        # Estatísticas de adição
+        if 'Sector_SPDR' in df.columns:
+            st.markdown("**📊 Setores Disponíveis:**")
+            sectors = df['Sector_SPDR'].value_counts()
+            for sector, count in sectors.head(5).items():
+                if sector and str(sector).strip():
+                    st.text(f"• {sector}: {count} símbolos")
 
     # TAB TAGS LIVRES (multi símbolos)
     with tab3:
