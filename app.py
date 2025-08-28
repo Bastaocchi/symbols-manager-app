@@ -98,9 +98,8 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(st.secrets["google_sheets"]), scope)
 client = gspread.authorize(creds)
 
-# ID da planilha
 SHEET_ID = "1NMCkkcrTFOm1ZoOiImzzRRFd6NEn5kMPTkuc5j_3DcQ"
-worksheet = client.open_by_key(SHEET_ID).sheet1  # pega primeira aba
+worksheet = client.open_by_key(SHEET_ID).sheet1  # primeira aba
 
 # =========================
 # FUNÇÕES AUXILIARES
@@ -108,19 +107,24 @@ worksheet = client.open_by_key(SHEET_ID).sheet1  # pega primeira aba
 def load_symbols():
     data = worksheet.get_all_records()
     df = pd.DataFrame(data)
-    if "Tag" not in df.columns:
-        df["Tag"] = ""
+
+    # Remover colunas "Column X" extras
+    df = df[[col for col in df.columns if not col.startswith("Column")]]
+
+    # Garantir coluna TAGS
+    if "TAGS" not in df.columns:
+        df["TAGS"] = ""
+
     return df
 
 def update_tag(symbol, tag_value):
     records = worksheet.get_all_records()
     df = pd.DataFrame(records)
-    if "Symbol" not in df.columns:
-        st.error("Sua planilha não tem a coluna 'Symbol'")
-        return
+
+    # Encontrar índice da linha
     try:
         row_idx = df.index[df["Symbol"] == symbol][0] + 2  # +2 por causa do header
-        col_idx = df.columns.get_loc("Tag") + 1
+        col_idx = df.columns.get_loc("TAGS") + 1
         worksheet.update_cell(row_idx, col_idx, tag_value)
         st.success(f"Tag '{tag_value}' adicionada ao símbolo {symbol}")
     except IndexError:
@@ -140,7 +144,7 @@ def main():
     with col1: st.metric("Total de Símbolos", len(df))
     with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
     with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-    with col4: st.metric("Com Tags", len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0)
+    with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
     with col5: st.metric("Status", "Carregado", delta="Online")
 
     st.markdown("---")
