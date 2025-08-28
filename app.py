@@ -69,39 +69,39 @@ def render_html_table_visualizar(df):
     html_table = html_table.replace(
         '<th',
         '<th style="font-size:20px; font-weight:bold; padding:12px; '
-        'background-color:#222; color:white; text-align:center; border:none;"'
+        'background-color:#222; color:white; text-align:center; border:none !important;"'
     )
 
     # Células
     html_table = html_table.replace(
         '<td',
         '<td style="font-size:18px; padding:10px; text-align:center; '
-        'color:#eee; border:none;"'
+        'color:#eee; border:none !important;"'
     )
 
     # Tabela geral
     html_table = html_table.replace(
         '<table',
-        '<table style="width:100%; border-collapse:collapse; border:none;"'
+        '<table style="width:100%; border-collapse:collapse; border:none !important;"'
     )
 
-    # Alternar cor das linhas (zebra)
+    # Alternar cor das linhas (zebra personalizada)
     rows = html_table.split("<tr>")
     for i in range(1, len(rows)):
-        if i % 2 == 1:  # ímpar → começa ESCURO
-            rows[i] = '<tr style="background-color:#111;">' + rows[i]
-        else:           # par → CLARO
-            rows[i] = '<tr style="background-color:#1e1e1e;">' + rows[i]
+        if i % 2 == 1:  # ímpar → escuro
+            rows[i] = '<tr style="background-color:#15191f;">' + rows[i]
+        else:           # par → claro
+            rows[i] = '<tr style="background-color:#1b1f24;">' + rows[i]
     html_table = "<tr>".join(rows)
 
     # Ajuste colunas
     html_table = html_table.replace(
         '<th>Company</th>',
-        '<th style="width:200px;">Company</th>'
+        '<th style="width:150px;">Company</th>'
     )
     html_table = html_table.replace(
         '<th>Tag</th>',
-        '<th style="width:160px; font-size:22px; color:#ffcc00;">Tag</th>'
+        '<th style="width:220px; font-size:22px; color:#ffcc00;">Tag</th>'
     )
 
     return html_table
