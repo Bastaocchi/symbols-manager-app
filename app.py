@@ -123,8 +123,8 @@ div.stButton > button:hover {
     cursor: pointer;
 }
 
-/* Avisos (st.info, st.warning, st.success, st.error) */
-div.stAlert[data-baseweb="alert"] {
+/* Avisos (info, warning, success, error) no padrão dark */
+div.stAlert, div[data-testid="stAlert"], .stAlert {
     background-color: #1b1f24 !important;
     color: #ddd !important;
     border: 1px solid #2a323b !important;
@@ -132,6 +132,15 @@ div.stAlert[data-baseweb="alert"] {
     font-size: 16px !important;
     font-family: 'Segoe UI', sans-serif !important;
     padding: 10px 15px !important;
+}
+
+/* Links dentro do alerta */
+div.stAlert a {
+    color: #ffcc00 !important;
+    text-decoration: none !important;
+}
+div.stAlert a:hover {
+    text-decoration: underline !important;
 }
 </style>
 """, unsafe_allow_html=True)
