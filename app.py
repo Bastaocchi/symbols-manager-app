@@ -33,19 +33,21 @@ table {
     table-layout: fixed !important;
     border-collapse: collapse !important;
 }
+/* Cabeçalho */
 th {
     background-color: #2a323b !important;
     color: white !important;
-    font-size: 20px !important;
+    font-size: 22px !important;   /* aumentado */
     font-weight: bold !important;
     text-align: center !important;
-    padding: 12px !important;
+    padding: 14px !important;
 }
+/* Células */
 td {
-    font-size: 18px !important;
+    font-size: 20px !important;   /* aumentado */
     text-align: center !important;
     color: #eee !important;
-    padding: 10px !important;
+    padding: 12px !important;
 }
 tr:nth-child(odd) { background-color: #15191f !important; }
 tr:nth-child(even) { background-color: #1b1f24 !important; }
@@ -62,7 +64,7 @@ th:nth-child(3), td:nth-child(3) { width: 220px !important; }
 th:nth-child(4), td:nth-child(4) { width: 120px !important; }
 th:nth-child(5), td:nth-child(5) {
     width: 220px !important;
-    font-size: 22px !important;
+    font-size: 24px !important;   /* destaque ainda maior */
     color: #ffcc00 !important;
 }
 div.stButton > button {
@@ -88,8 +90,7 @@ div.stButton > button:hover {
 .stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
     color: #aaa !important;
 }
-
-/* 🔽 Reduz espaço no topo */
+/* Reduz espaço no topo */
 section.main > div:first-child {
     padding-top: 0rem !important;
     margin-top: -2rem !important;
@@ -146,17 +147,13 @@ def update_tag(symbol, tag_value):
 # MAIN APP
 # =========================
 def main():
-    # 🔽 Marca d’água discreta no topo
-    st.markdown('<p style="text-align:left; font-size:14px; color:#888; margin-bottom:0.5rem;">Gerenciador de Símbolos</p>', unsafe_allow_html=True)
-
+    # 🔽 Título removido (começa direto nas abas)
     df = load_symbols()
 
     tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
 
     # TAB VISUALIZAR
     with tab1:
-        st.subheader("Visualizar Símbolos")
-
         # --- Filtros ---
         col1, col2, col3 = st.columns(3)
         with col1:
