@@ -56,7 +56,7 @@ td:nth-child(2) {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    text-align: left !important;
+    text-align: center !important;
 }
 th:nth-child(3), td:nth-child(3) { width: 220px !important; }
 th:nth-child(4), td:nth-child(4) { width: 280px !important; }
