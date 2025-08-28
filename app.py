@@ -148,9 +148,9 @@ def get_all_tags(df):
     if 'TAGS' in df.columns:
         for tags_cell in df['TAGS'].dropna():
             if str(tags_cell).strip():
-                # Separar por vírgula, ponto e vírgula, pipe ou espaço duplo
+                # Separar por vírgula, ponto e vírgula, pipe ou espaço simples
                 import re
-                tags_list = re.split(r'[,;|\s]{2,}|\s*,\s*|\s*;\s*|\s*\|\s*', str(tags_cell))
+                tags_list = re.split(r'[,;|\s]+', str(tags_cell))
                 for tag in tags_list:
                     tag = tag.strip()
                     if tag:
@@ -276,7 +276,7 @@ def main():
         if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
             # Filtrar linhas que contêm a tag específica
             mask = filtered_df['TAGS'].apply(
-                lambda tags_cell: tag_filter in [tag.strip() for tag in re.split(r'[,;|\s]{2,}|\s*,\s*|\s*;\s*|\s*\|\s*', str(tags_cell)) if tag.strip()]
+                lambda tags_cell: tag_filter in [tag.strip() for tag in re.split(r'[,;|\s]+', str(tags_cell)) if tag.strip()]
                 if pd.notna(tags_cell) else False
             )
             filtered_df = filtered_df[mask]
