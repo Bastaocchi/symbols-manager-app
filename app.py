@@ -67,7 +67,6 @@ th:nth-child(5), td:nth-child(5) {
     color: #ffcc00 !important;
 }
 th:nth-child(6), td:nth-child(6) { width: 120px !important; }
-th:nth-child(7), td:nth-child(7) { width: 100px !important; }
 div.stButton > button {
     background-color: #2a2f36 !important;
     color: #ffffff !important;
@@ -342,15 +341,6 @@ def main():
                     sector_number = SECTOR_MAPPING[sector_code]["number"]
                 
                 etf_symbol = st.text_input("ETF Symbol", placeholder="Ex: XLK")
-                
-                # Mostrar o número do setor (apenas leitura)
-                st.text_input(
-                    "Sector Number", 
-                    value=str(sector_number), 
-                    disabled=True,
-                    help="Número preenchido automaticamente baseado no setor SPDR selecionado"
-                )
-                
                 tags = st.text_input("Tags", placeholder="Ex: tech, growth")
             
             st.markdown("**Campos obrigatórios marcados com ***")
@@ -379,7 +369,6 @@ def main():
                         'TradingView_Industry': tradingview_industry.strip(),
                         'Sector_SPDR': sector_code,
                         'ETF_Symbol': etf_symbol.upper().strip() if etf_symbol.strip() else "",
-                        'Sector_Number': sector_number,
                         'TAGS': tags.strip()
                     }
                     
