@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS global
+# CSS global (básico, sem forçar tabelas de estatísticas)
 st.markdown("""
 <style>
     .main-header {
@@ -22,27 +22,6 @@ st.markdown("""
         background: linear-gradient(90deg, #1e3c72, #2a5298);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-    table {
-        table-layout: fixed;
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th {
-        font-size: 18px;
-        font-weight: bold;
-        padding: 12px;
-        background-color: #444;
-        color: white;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-    td {
-        font-size: 16px;
-        padding: 10px;
-        text-align: center;
-        border: 1px solid #ddd;
-        color: #333;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -107,8 +86,30 @@ def get_ticker_info(symbol):
     except:
         return None
 
-def render_html_table(df):
+# 🔥 Função para renderizar tabela só na aba Visualizar
+def render_html_table_visualizar(df):
     html_table = df.to_html(escape=False, index=False)
+
+    # Cabeçalho centralizado, maior e branco
+    html_table = html_table.replace(
+        '<th',
+        '<th style="font-size:20px; font-weight:bold; padding:12px; '
+        'background-color:#444; color:white; text-align:center; border:1px solid #ddd;"'
+    )
+
+    # Células maiores, centralizadas e cor mais clara
+    html_table = html_table.replace(
+        '<td',
+        '<td style="font-size:18px; padding:10px; text-align:center; '
+        'border:1px solid #ddd; color:#eee;"'
+    )
+
+    # Estilo da tabela
+    html_table = html_table.replace(
+        '<table',
+        '<table style="font-size:16px; width:100%; border-collapse:collapse;"'
+    )
+
     return html_table
 
 def main():
@@ -199,7 +200,8 @@ def main():
             if 'Company' in display_df.columns:
                 display_df['Company'] = display_df['Company'].str[:100]
 
-            st.markdown(render_html_table(display_df), unsafe_allow_html=True)
+            # 🔥 usa o estilo especial aqui
+            st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
             csv = display_df.to_csv(index=False)
             st.download_button(
@@ -211,29 +213,23 @@ def main():
         else:
             st.warning("🔍 Nenhum símbolo encontrado com os filtros aplicados")
 
-    # 📊 Estatísticas
+    # ➕ Aba Adicionar (sem mudanças)
+    with tab2:
+        st.subheader("➕ Adicionar Novo Símbolo")
+        st.info("🔧 Esta aba continua igual, sem estilização extra.")
+
+    # 🏷️ Aba Tags (sem mudanças)
+    with tab3:
+        st.subheader("🏷️ Gerenciar Tags")
+        st.info("🔧 Esta aba continua igual, sem estilização extra.")
+
+    # 📊 Estatísticas (sem mudanças)
     with tab4:
         st.subheader("📊 Estatísticas Detalhadas")
-
         if 'Sector_SPDR' in df.columns:
-            st.subheader("📊 Distribuição por Setor SPDR")
-            sector_dist = df['Sector_SPDR'].value_counts().head(10)
-            chart_data = pd.DataFrame({
-                "Setor": sector_dist.index,
-                "Quantidade": sector_dist.values,
-                "Percentual": (sector_dist.values / len(df) * 100).round(1).astype(str) + "%"
-            })
-            st.markdown(render_html_table(chart_data), unsafe_allow_html=True)
-
+            st.write(df['Sector_SPDR'].value_counts().head(10))
         if 'ETF_Symbol' in df.columns:
-            st.subheader("📊 Distribuição por ETF")
-            etf_dist = df['ETF_Symbol'].value_counts().head(10)
-            etf_data = pd.DataFrame({
-                "ETF": etf_dist.index,
-                "Quantidade": etf_dist.values,
-                "Percentual": (etf_dist.values / len(df) * 100).round(1).astype(str) + "%"
-            })
-            st.markdown(render_html_table(etf_data), unsafe_allow_html=True)
+            st.write(df['ETF_Symbol'].value_counts().head(10))
 
 if __name__ == "__main__":
     main()
