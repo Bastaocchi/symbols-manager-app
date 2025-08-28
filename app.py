@@ -65,38 +65,39 @@ def get_ticker_info(symbol):
 def render_html_table_visualizar(df):
     html_table = df.to_html(escape=False, index=False)
 
-    # Cabeçalho estilizado
+    # Cabeçalho
     html_table = html_table.replace(
         '<th',
         '<th style="font-size:20px; font-weight:bold; padding:12px; '
-        'background-color:#444; color:white; text-align:center;"'
+        'background-color:#222; color:white; text-align:center; border:none;"'
     )
 
     # Células
     html_table = html_table.replace(
         '<td',
-        '<td style="font-size:18px; padding:10px; text-align:center; color:#eee;"'
+        '<td style="font-size:18px; padding:10px; text-align:center; '
+        'color:#eee; border:none;"'
     )
 
-    # Tabela
+    # Tabela geral
     html_table = html_table.replace(
         '<table',
         '<table style="width:100%; border-collapse:collapse; border:none;"'
     )
 
-    # Alternar cor das linhas (striped)
+    # Alternar cor das linhas (zebra)
     rows = html_table.split("<tr>")
     for i in range(1, len(rows)):
-        if i % 2 == 0:
+        if i % 2 == 1:  # ímpar → começa ESCURO
+            rows[i] = '<tr style="background-color:#111;">' + rows[i]
+        else:           # par → CLARO
             rows[i] = '<tr style="background-color:#1e1e1e;">' + rows[i]
-        else:
-            rows[i] = '<tr style="background-color:#2b2b2b;">' + rows[i]
     html_table = "<tr>".join(rows)
 
-    # Ajuste colunas específicas
+    # Ajuste colunas
     html_table = html_table.replace(
         '<th>Company</th>',
-        '<th style="width:260px;">Company</th>'
+        '<th style="width:200px;">Company</th>'
     )
     html_table = html_table.replace(
         '<th>Tag</th>',
@@ -181,7 +182,7 @@ def main():
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
             if 'Company' in display_df.columns:
-                display_df['Company'] = display_df['Company'].str[:100]
+                display_df['Company'] = display_df['Company'].str[:80]
 
             st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
@@ -195,7 +196,7 @@ def main():
         else:
             st.warning("Nenhum símbolo encontrado.")
 
-    # Outras abas ficam simples
+    # ===== Outras abas =====
     with tab2:
         st.subheader("➕ Adicionar Novo Símbolo")
         st.info("🔧 Aba em desenvolvimento")
