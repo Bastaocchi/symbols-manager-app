@@ -23,36 +23,6 @@ st.markdown("""
 html, body, [class*="css"] {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
-
-/* Forçar fonte maior em todas as tabelas do Streamlit */
-.stDataFrame table, .stDataFrame th, .stDataFrame td,
-[data-testid="stDataFrame"] table, [data-testid="stDataFrame"] th, [data-testid="stDataFrame"] td,
-div[data-testid="stDataFrame"] table, div[data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] td {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-    font-size: 24px !important;
-    border: none !important;
-    outline: none !important;
-}
-
-/* Cabeçalhos específicos */
-.stDataFrame th, [data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] th {
-    background-color: #2a323b !important;
-    color: white !important;
-    font-size: 26px !important;
-    font-weight: bold !important;
-    text-align: center !important;
-    padding: 14px !important;
-}
-
-/* Células específicas */
-.stDataFrame td, [data-testid="stDataFrame"] td, div[data-testid="stDataFrame"] td {
-    font-size: 24px !important;
-    text-align: center !important;
-    color: #eee !important;
-    padding: 12px !important;
-}
-
-/* CSS original mantido para compatibilidade */
 table, th, td {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
     border: none !important;
@@ -63,21 +33,19 @@ table {
     table-layout: fixed !important;
     border-collapse: collapse !important;
 }
-/* Cabeçalho */
 th {
     background-color: #2a323b !important;
     color: white !important;
-    font-size: 26px !important;
+    font-size: 20px !important;
     font-weight: bold !important;
     text-align: center !important;
-    padding: 14px !important;
+    padding: 12px !important;
 }
-/* Células */
 td {
-    font-size: 24px !important;
+    font-size: 18px !important;
     text-align: center !important;
     color: #eee !important;
-    padding: 12px !important;
+    padding: 10px !important;
 }
 tr:nth-child(odd) { background-color: #15191f !important; }
 tr:nth-child(even) { background-color: #1b1f24 !important; }
@@ -94,7 +62,7 @@ th:nth-child(3), td:nth-child(3) { width: 220px !important; }
 th:nth-child(4), td:nth-child(4) { width: 120px !important; }
 th:nth-child(5), td:nth-child(5) {
     width: 220px !important;
-    font-size: 26px !important;
+    font-size: 22px !important;
     color: #ffcc00 !important;
 }
 div.stButton > button {
@@ -119,11 +87,6 @@ div.stButton > button:hover {
 }
 .stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
     color: #aaa !important;
-}
-/* Reduz espaço no topo */
-section.main > div:first-child {
-    padding-top: 0rem !important;
-    margin-top: -2rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -177,13 +140,31 @@ def update_tag(symbol, tag_value):
 # MAIN APP
 # =========================
 def main():
-    # 🔽 Título removido (começa direto nas abas)
+    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+
+    # Botão Recarregar
+    if st.button("🔄 Recarregar Planilha"):
+        st.cache_data.clear()
+        st.rerun()
+
     df = load_symbols()
 
+    st.markdown("---")
+    st.subheader("Resumo dos Dados")
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1: st.metric("Total de Símbolos", len(df))
+    with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+    with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+    with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
+    with col5: st.metric("Status", "Carregado", delta="Online")
+
+    st.markdown("---")
     tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
 
     # TAB VISUALIZAR
     with tab1:
+        st.subheader("Visualizar Símbolos")
+
         # --- Filtros ---
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -226,7 +207,7 @@ def main():
             # Cabeçalho
             html_table += "<tr>"
             for col in filtered_df.columns:
-                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 24px; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #444;'>{col}</th>"
+                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 20px; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #444;'>{col}</th>"
             html_table += "</tr>"
             
             # Linhas de dados
@@ -236,28 +217,13 @@ def main():
                 for col in filtered_df.columns:
                     value = str(row[col]) if pd.notna(row[col]) else ""
                     color = "#ffcc00" if col == "TAGS" else "#eee"
-                    html_table += f"<td style='font-size: 24px; text-align: center; color: {color}; padding: 12px; border: 1px solid #444;'>{value}</td>"
+                    html_table += f"<td style='font-size: 18px; text-align: center; color: {color}; padding: 12px; border: 1px solid #444;'>{value}</td>"
                 html_table += "</tr>"
             
             html_table += "</table>"
             
             # Tabela sem container de scroll - rola junto com a página
             st.markdown(html_table, unsafe_allow_html=True)
-
-        # 🔽 Resumo agora embaixo da tabela
-        st.markdown("---")
-        st.subheader("Resumo dos Dados")
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1: st.metric("Total de Símbolos", len(df))
-        with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
-        with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-        with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
-        with col5: st.metric("Status", "Carregado", delta="Online")
-
-        # 🔽 Botão recarregar também embaixo
-        if st.button("🔄 Recarregar Planilha"):
-            st.cache_data.clear()
-            st.rerun()
 
     # TAB ADICIONAR (rascunho)
     with tab2:
