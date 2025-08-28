@@ -51,9 +51,9 @@ td {
 tr:nth-child(odd) { background-color: #15191f !important; }
 tr:nth-child(even) { background-color: #1b1f24 !important; }
 th:nth-child(1), td:nth-child(1) { width: 100px !important; }
-th:nth-child(2) { width: 350px !important; text-align: center !important; }
+th:nth-child(2) { width: 400px !important; text-align: center !important; }
 td:nth-child(2) {
-    width: 350px !important;
+    width: 400px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -61,14 +61,9 @@ td:nth-child(2) {
 }
 th:nth-child(3), td:nth-child(3) { width: 250px !important; }
 th:nth-child(4), td:nth-child(4) { width: 300px !important; }
-th:nth-child(5), td:nth-child(5) {
-    width: 150px !important;
-    font-size: 22px !important;
-    color: #ffcc00 !important;
-}
-th:nth-child(6), td:nth-child(6) { width: 120px !important; }
-th:nth-child(7), td:nth-child(7) { 
-    width: 200px !important;
+th:nth-child(5), td:nth-child(5) { width: 200px !important; }
+th:nth-child(6), td:nth-child(6) { 
+    width: 250px !important;
     font-size: 22px !important;
     color: #ffcc00 !important;
 }
@@ -252,8 +247,8 @@ def main():
             )
         with col2:
             etf_filter = st.selectbox(
-                "Filtrar por ETF:",
-                ["Todos"] + sorted(df['ETF_Symbol'].dropna().unique().tolist()) if 'ETF_Symbol' in df.columns else ["Todos"]
+                "Filtrar por Setor SPDR:",
+                ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"]
             )
         with col3:
             tag_filter = st.selectbox(
@@ -268,8 +263,8 @@ def main():
         filtered_df = df.copy()
         if sector_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
             filtered_df = filtered_df[filtered_df['Sector_SPDR'] == sector_filter]
-        if etf_filter != "Todos" and 'ETF_Symbol' in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df['ETF_Symbol'] == etf_filter]
+        if etf_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
+            filtered_df = filtered_df[filtered_df['Sector_SPDR'] == etf_filter]
         if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
             filtered_df = filtered_df[filtered_df['TAGS'] == tag_filter]
         if search_term:
@@ -334,18 +329,16 @@ def main():
                 selected_sector = st.selectbox(
                     "Setor SPDR",
                     sector_options,
-                    help="Selecione um setor SPDR - o número será preenchido automaticamente"
+                    help="Selecione um setor SPDR"
                 )
                 
-                # Extrair o código do setor selecionado
+                # Extrair o código do setor selecionado para salvar no formato completo
                 if selected_sector == "Não selecionado":
-                    sector_code = ""
-                    sector_number = 0
+                    sector_spdr_value = ""
                 else:
-                    sector_code = selected_sector.split(" - ")[0]
-                    sector_number = SECTOR_MAPPING[sector_code]["number"]
+                    sector_spdr_value = selected_sector  # Salva "XLV - Health Care"
                 
-                etf_symbol = st.text_input("ETF Symbol", placeholder="Ex: XLK")
+                etf_symbol = ""  # Não usar mais o ETF_Symbol separado
                 tags = st.text_input("Tags", placeholder="Ex: tech, growth")
             
             st.markdown("**Campos obrigatórios marcados com ***")
@@ -372,8 +365,7 @@ def main():
                         'Company': company.strip(),
                         'TradingView_Sector': tradingview_sector.strip(),
                         'TradingView_Industry': tradingview_industry.strip(),
-                        'Sector_SPDR': sector_code,
-                        'ETF_Symbol': etf_symbol.upper().strip() if etf_symbol.strip() else "",
+                        'Sector_SPDR': sector_spdr_value,
                         'TAGS': tags.strip()
                     }
                     
