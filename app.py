@@ -65,24 +65,26 @@ def get_ticker_info(symbol):
 def render_html_table_visualizar(df):
     html_table = df.to_html(escape=False, index=False)
 
+    # Fonte global
+    html_table = html_table.replace(
+        '<table',
+        '<table style="width:100%; border-collapse:collapse; border:none !important; '
+        'outline:none !important; font-family: Segoe UI, Roboto, Helvetica Neue, sans-serif;"'
+    )
+
     # Cabeçalho
     html_table = html_table.replace(
         '<th',
         '<th style="font-size:20px; font-weight:bold; padding:12px; '
-        'background-color:#222; color:white; text-align:center; border:none !important;"'
+        'background-color:#2a323b; color:white; text-align:center; '
+        'border:none !important; outline:none !important;"'
     )
 
     # Células
     html_table = html_table.replace(
         '<td',
         '<td style="font-size:18px; padding:10px; text-align:center; '
-        'color:#eee; border:none !important;"'
-    )
-
-    # Tabela geral
-    html_table = html_table.replace(
-        '<table',
-        '<table style="width:100%; border-collapse:collapse; border:none !important;"'
+        'color:#eee; border:none !important; outline:none !important;"'
     )
 
     # Alternar cor das linhas (zebra personalizada)
