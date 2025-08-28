@@ -6,7 +6,7 @@ import yfinance as yf
 # Configuração da página
 st.set_page_config(
     page_title="Gerenciador de Símbolos",
-    page_icon="📊",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -159,25 +159,25 @@ def render_html_table_visualizar(df):
 
 # ===== MAIN =====
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3.5rem; margin-bottom:2rem; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="text-align:center; font-size:3.5rem; margin-bottom:2rem; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
     # Configurações
-    st.subheader("⚙️ Configurações")
+    st.subheader("Configurações")
     col1, col2 = st.columns([3, 1])
     with col1:
         sheet_url = st.text_input(
-            "🔗 URL do Google Sheets:",
+            "URL do Google Sheets:",
             value="https://docs.google.com/spreadsheets/d/1NMCkkcrTFOm1ZoOiImzzRRFd6NEn5kMPTkuc5j_3DcQ/edit?gid=744859441#gid=744859441",
             help="Cole a URL do seu Google Sheets público"
         )
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🔄 Recarregar", type="primary"):
+        if st.button("Recarregar", type="primary"):
             st.cache_data.clear()
             st.rerun()
 
     if not sheet_url:
-        st.warning("⚠️ Insira a URL do Google Sheets")
+        st.warning("Insira a URL do Google Sheets")
         return
 
     df = load_symbols_from_sheets(sheet_url)
@@ -186,21 +186,21 @@ def main():
 
     # Resumo
     st.markdown("---")
-    st.subheader("📊 Resumo dos Dados")
+    st.subheader("Resumo dos Dados")
     col1, col2, col3, col4, col5 = st.columns(5)
-    with col1: st.metric("📈 Total de Símbolos", len(df))
-    with col2: st.metric("🏭 Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
-    with col3: st.metric("🔬 Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-    with col4: st.metric("🏷️ Com Tags", len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0)
-    with col5: st.metric("✅ Status", "Carregado", delta="Online")
+    with col1: st.metric("Total de Símbolos", len(df))
+    with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+    with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+    with col4: st.metric("Com Tags", len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0)
+    with col5: st.metric("Status", "Carregado", delta="Online")
 
     # Tabs
     st.markdown("---")
-    tab1, tab2, tab3, tab4 = st.tabs(["📋 Visualizar", "➕ Adicionar", "🏷️ Tags", "📊 Estatísticas"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Visualizar", "Adicionar", "Tags", "Estatísticas"])
 
     # ===== Visualizar =====
     with tab1:
-        st.subheader("📋 Visualizar Símbolos")
+        st.subheader("Visualizar Símbolos")
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             sector_filter = st.selectbox("Filtrar Setor", ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"])
@@ -209,7 +209,7 @@ def main():
         with col3:
             tag_filter = st.selectbox("Filtrar Tag", ["Todas"] + sorted([t for t in df['Tag'].dropna().unique() if t.strip()]) if 'Tag' in df.columns else ["Todas"])
         with col4:
-            search_term = st.text_input("🔍 Buscar Symbol/Company:")
+            search_term = st.text_input("Buscar Symbol/Company:")
 
         filtered_df = df.copy()
         if sector_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
@@ -225,7 +225,7 @@ def main():
             )
             filtered_df = filtered_df[mask]
 
-        st.info(f"📊 Mostrando {len(filtered_df)} de {len(df)} símbolos")
+        st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
 
         display_columns = ['Symbol', 'Company', 'Sector_SPDR', 'ETF_Symbol', 'Tag']
         available_columns = [c for c in display_columns if c in filtered_df.columns]
@@ -237,7 +237,7 @@ def main():
 
             csv = display_df.to_csv(index=False)
             st.download_button(
-                label="📥 Download CSV",
+                label="Download CSV",
                 data=csv,
                 file_name=f"symbols_filtered_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv"
@@ -247,16 +247,16 @@ def main():
 
     # ===== Outras abas =====
     with tab2:
-        st.subheader("➕ Adicionar Novo Símbolo")
-        st.info("🔧 Aba em desenvolvimento")
+        st.subheader("Adicionar Novo Símbolo")
+        st.info("Aba em desenvolvimento")
 
     with tab3:
-        st.subheader("🏷️ Gerenciar Tags")
-        st.info("🔧 Aba em desenvolvimento")
+        st.subheader("Gerenciar Tags")
+        st.info("Aba em desenvolvimento")
 
     with tab4:
-        st.subheader("📊 Estatísticas Detalhadas")
-        st.write("🔧 Em breve gráficos bonitos aqui 😉")
+        st.subheader("Estatísticas Detalhadas")
+        st.write("Em breve gráficos bonitos aqui 😉")
 
 if __name__ == "__main__":
     main()
