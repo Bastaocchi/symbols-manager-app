@@ -4,6 +4,7 @@ from datetime import datetime
 import yfinance as yf
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import unicodedata
 
 # =========================
 # CONFIGURAÇÃO DA PÁGINA
@@ -106,6 +107,16 @@ worksheet = client.open_by_key(SHEET_ID).sheet1  # primeira aba
 # =========================
 # FUNÇÕES AUXILIARES
 # =========================
+def normalize_text(text):
+    """Remove acentos e converte para minúsculo para busca flexível"""
+    if pd.isna(text):
+        return ""
+    text = str(text).lower()
+    # Remove acentos
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(char for char in text if unicodedata.category(char) != 'Mn')
+    return text
+
 def load_symbols():
     data = worksheet.get_all_records()
     df = pd.DataFrame(data)
@@ -223,7 +234,16 @@ def main():
         if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
             filtered_df = filtered_df[filtered_df['TAGS'] == tag_filter]
         if search_term:
-            mask = filtered_df.apply(lambda row: row.astype(str).str.contains(search_term, case=False, na=False)).any(axis=1)
+            # Normalizar o termo de busca (remover acentos e converter para minúsculo)
+            normalized_search = normalize_text(search_term)
+            
+            # Aplicar busca flexível - normaliza cada célula e compara
+            mask = filtered_df.apply(
+                lambda row: row.apply(
+                    lambda cell: normalized_search in normalize_text(cell)
+                ).any(), 
+                axis=1
+            )
             filtered_df = filtered_df[mask]
 
         st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
