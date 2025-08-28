@@ -11,22 +11,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS global (básico, sem forçar tabelas de estatísticas)
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 2rem;
-        background: linear-gradient(90deg, #1e3c72, #2a5298);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-</style>
-""", unsafe_allow_html=True)
+# ===== Funções auxiliares =====
 
-# Função para carregar dados do Google Sheets
 @st.cache_data(ttl=300)
 def load_symbols_from_sheets(sheet_url):
     try:
@@ -40,28 +26,18 @@ def load_symbols_from_sheets(sheet_url):
         else:
             csv_url = sheet_url
 
-        try:
-            df = pd.read_csv(csv_url, encoding='utf-8')
-        except UnicodeDecodeError:
-            df = pd.read_csv(csv_url, encoding='latin1')
-        except:
-            df = pd.read_csv(csv_url)
-
+        df = pd.read_csv(csv_url)
         if 'Column 1' in df.columns:
             df = df.rename(columns={'Column 1': 'Tag'})
-
         if 'Tag' not in df.columns:
             df['Tag'] = ""
-
         df = df.fillna("")
         df = df.dropna(how='all')
         return df
     except Exception as e:
         st.error(f"Erro ao carregar Google Sheets: {e}")
-        st.info("💡 Verifique se a planilha está pública")
         return None
 
-# Função para validar ticker
 @st.cache_data(ttl=3600)
 def validate_ticker(symbol):
     try:
@@ -71,7 +47,6 @@ def validate_ticker(symbol):
     except:
         return False
 
-# Função para obter informações do ticker
 @st.cache_data(ttl=3600)
 def get_ticker_info(symbol):
     try:
@@ -86,39 +61,56 @@ def get_ticker_info(symbol):
     except:
         return None
 
-# 🔥 Função para renderizar tabela só na aba Visualizar
+# ===== Renderizador customizado para Visualizar =====
 def render_html_table_visualizar(df):
     html_table = df.to_html(escape=False, index=False)
 
-    # Cabeçalho centralizado, maior e branco
+    # Cabeçalho estilizado
     html_table = html_table.replace(
         '<th',
         '<th style="font-size:20px; font-weight:bold; padding:12px; '
-        'background-color:#444; color:white; text-align:center; border:1px solid #ddd;"'
+        'background-color:#444; color:white; text-align:center;"'
     )
 
-    # Células maiores, centralizadas e cor mais clara
+    # Células
     html_table = html_table.replace(
         '<td',
-        '<td style="font-size:18px; padding:10px; text-align:center; '
-        'border:1px solid #ddd; color:#eee;"'
+        '<td style="font-size:18px; padding:10px; text-align:center; color:#eee;"'
     )
 
-    # Estilo da tabela
+    # Tabela
     html_table = html_table.replace(
         '<table',
-        '<table style="font-size:16px; width:100%; border-collapse:collapse;"'
+        '<table style="width:100%; border-collapse:collapse; border:none;"'
+    )
+
+    # Alternar cor das linhas (striped)
+    rows = html_table.split("<tr>")
+    for i in range(1, len(rows)):
+        if i % 2 == 0:
+            rows[i] = '<tr style="background-color:#1e1e1e;">' + rows[i]
+        else:
+            rows[i] = '<tr style="background-color:#2b2b2b;">' + rows[i]
+    html_table = "<tr>".join(rows)
+
+    # Ajuste colunas específicas
+    html_table = html_table.replace(
+        '<th>Company</th>',
+        '<th style="width:260px;">Company</th>'
+    )
+    html_table = html_table.replace(
+        '<th>Tag</th>',
+        '<th style="width:160px; font-size:22px; color:#ffcc00;">Tag</th>'
     )
 
     return html_table
 
+# ===== MAIN =====
 def main():
-    st.markdown('<h1 class="main-header">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
-    st.markdown("**Gerencie seus tickers, setores e tags para análise**")
+    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
-    # Configurações no topo
+    # Configurações
     st.subheader("⚙️ Configurações")
-
     col1, col2 = st.columns([3, 1])
     with col1:
         sheet_url = st.text_input(
@@ -128,51 +120,42 @@ def main():
         )
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🔄 Recarregar do Sheets", type="primary"):
+        if st.button("🔄 Recarregar", type="primary"):
             st.cache_data.clear()
             st.rerun()
 
-    # Carregar dados
-    if sheet_url:
-        df = load_symbols_from_sheets(sheet_url)
-        if df is not None:
-            st.markdown("---")
-            st.subheader("📊 Resumo dos Dados")
-
-            col1, col2, col3, col4, col5 = st.columns(5)
-            total_symbols = len(df)
-            unique_sectors = len(df['TradingView_Sector'].dropna().unique()) if 'TradingView_Sector' in df.columns else 0
-            unique_industries = len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0
-            symbols_with_tags = len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0
-            unique_spdr_sectors = len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0
-
-            with col1: st.metric("📈 Total de Símbolos", total_symbols)
-            with col2: st.metric("🏭 Setores SPDR", unique_spdr_sectors)
-            with col3: st.metric("🔬 Indústrias", unique_industries)
-            with col4: st.metric("🏷️ Com Tags", symbols_with_tags)
-            with col5: st.metric("✅ Status", "Carregado", delta="Online")
-        else:
-            st.error("❌ Não foi possível carregar os dados do Google Sheets")
-            return
-    else:
-        st.warning("⚠️ Por favor, insira a URL do Google Sheets")
+    if not sheet_url:
+        st.warning("⚠️ Insira a URL do Google Sheets")
         return
 
-    # Tabs principais
-    st.markdown("---")
-    tab1, tab2, tab3, tab4 = st.tabs(["📋 Visualizar", "➕ Adicionar", "🏷️ Gerenciar Tags", "📊 Estatísticas Detalhadas"])
+    df = load_symbols_from_sheets(sheet_url)
+    if df is None:
+        return
 
-    # 📋 Aba Visualizar
+    # Resumo
+    st.markdown("---")
+    st.subheader("📊 Resumo dos Dados")
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1: st.metric("📈 Total de Símbolos", len(df))
+    with col2: st.metric("🏭 Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+    with col3: st.metric("🔬 Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+    with col4: st.metric("🏷️ Com Tags", len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0)
+    with col5: st.metric("✅ Status", "Carregado", delta="Online")
+
+    # Tabs
+    st.markdown("---")
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 Visualizar", "➕ Adicionar", "🏷️ Tags", "📊 Estatísticas"])
+
+    # ===== Visualizar =====
     with tab1:
         st.subheader("📋 Visualizar Símbolos")
-
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            sector_filter = st.selectbox("Filtrar por Setor:", ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"])
+            sector_filter = st.selectbox("Filtrar Setor", ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"])
         with col2:
-            etf_filter = st.selectbox("Filtrar por ETF:", ["Todos"] + sorted(df['ETF_Symbol'].dropna().unique().tolist()) if 'ETF_Symbol' in df.columns else ["Todos"])
+            etf_filter = st.selectbox("Filtrar ETF", ["Todos"] + sorted(df['ETF_Symbol'].dropna().unique().tolist()) if 'ETF_Symbol' in df.columns else ["Todos"])
         with col3:
-            tag_filter = st.selectbox("Filtrar por Tag:", ["Todas"] + sorted([tag for tag in df['Tag'].dropna().unique() if tag.strip()]) if 'Tag' in df.columns else ["Todas"])
+            tag_filter = st.selectbox("Filtrar Tag", ["Todas"] + sorted([t for t in df['Tag'].dropna().unique() if t.strip()]) if 'Tag' in df.columns else ["Todas"])
         with col4:
             search_term = st.text_input("🔍 Buscar Symbol/Company:")
 
@@ -193,14 +176,13 @@ def main():
         st.info(f"📊 Mostrando {len(filtered_df)} de {len(df)} símbolos")
 
         display_columns = ['Symbol', 'Company', 'Sector_SPDR', 'ETF_Symbol', 'Tag']
-        available_columns = [col for col in display_columns if col in filtered_df.columns]
+        available_columns = [c for c in display_columns if c in filtered_df.columns]
 
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
             if 'Company' in display_df.columns:
                 display_df['Company'] = display_df['Company'].str[:100]
 
-            # 🔥 usa o estilo especial aqui
             st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
             csv = display_df.to_csv(index=False)
@@ -211,25 +193,20 @@ def main():
                 mime="text/csv"
             )
         else:
-            st.warning("🔍 Nenhum símbolo encontrado com os filtros aplicados")
+            st.warning("Nenhum símbolo encontrado.")
 
-    # ➕ Aba Adicionar (sem mudanças)
+    # Outras abas ficam simples
     with tab2:
         st.subheader("➕ Adicionar Novo Símbolo")
-        st.info("🔧 Esta aba continua igual, sem estilização extra.")
+        st.info("🔧 Aba em desenvolvimento")
 
-    # 🏷️ Aba Tags (sem mudanças)
     with tab3:
         st.subheader("🏷️ Gerenciar Tags")
-        st.info("🔧 Esta aba continua igual, sem estilização extra.")
+        st.info("🔧 Aba em desenvolvimento")
 
-    # 📊 Estatísticas (sem mudanças)
     with tab4:
         st.subheader("📊 Estatísticas Detalhadas")
-        if 'Sector_SPDR' in df.columns:
-            st.write(df['Sector_SPDR'].value_counts().head(10))
-        if 'ETF_Symbol' in df.columns:
-            st.write(df['ETF_Symbol'].value_counts().head(10))
+        st.write("🔧 Em breve gráficos bonitos aqui 😉")
 
 if __name__ == "__main__":
     main()
