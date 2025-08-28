@@ -101,27 +101,6 @@ th:nth-child(5), td:nth-child(5) {
     font-size: 22px !important;
     color: #ffcc00 !important;
 }
-
-/* Botões sóbrios */
-div.stButton > button {
-    background-color: #2a2f36 !important;   /* fundo cinza escuro */
-    color: #ffffff !important;              /* texto branco */
-    border: 1px solid #444 !important;      /* borda discreta */
-    border-radius: 6px !important;          /* cantos levemente arredondados */
-    padding: 8px 20px !important;
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    font-family: 'Segoe UI', sans-serif !important;
-    transition: all 0.2s ease-in-out;
-}
-
-/* Hover dos botões */
-div.stButton > button:hover {
-    background-color: #3a3f47 !important;
-    border-color: #666 !important;
-    color: #ffffff !important;
-    cursor: pointer;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -193,7 +172,7 @@ def main():
         )
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Recarregar"):   # Botão sóbrio
+        if st.button("Recarregar", type="primary"):
             st.cache_data.clear()
             st.rerun()
 
