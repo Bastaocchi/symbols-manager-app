@@ -109,6 +109,21 @@ div.stButton > button:hover {
 .stForm {
     font-size: 16px !important;
 }
+
+/* Reduzir altura da seção de métricas */
+div[data-testid="metric-container"] {
+    padding: 8px 16px !important;
+    margin: 4px 0 !important;
+}
+
+div[data-testid="metric-container"] > div {
+    padding: 0 !important;
+}
+
+.metric-container {
+    height: auto !important;
+    min-height: 60px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -223,7 +238,7 @@ def main():
     df = load_symbols()
 
     st.markdown("---")
-    st.subheader("Resumo dos Dados")
+    st.markdown("### Resumo dos Dados")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1: st.metric("Total de Símbolos", len(df))
     with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
