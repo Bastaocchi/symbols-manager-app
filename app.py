@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Gerenciador de Símbolos",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Sidebar minimizada
 )
 
 # CSS personalizado para interface moderna
