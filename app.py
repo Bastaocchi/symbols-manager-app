@@ -11,8 +11,59 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ===== Funções auxiliares =====
+# ===== CSS GLOBAL =====
+st.markdown("""
+<style>
+/* Fonte geral da tabela */
+table, th, td {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    border: none !important;
+    outline: none !important;
+}
 
+/* Cabeçalho */
+th {
+    background-color: #2a323b !important;
+    color: white !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    padding: 12px !important;
+}
+
+/* Células */
+td {
+    font-size: 18px !important;
+    text-align: center !important;
+    color: #eee !important;
+    padding: 10px !important;
+}
+
+/* Linhas zebra */
+tr:nth-child(odd) {
+    background-color: #15191f !important;
+}
+tr:nth-child(even) {
+    background-color: #1b1f24 !important;
+}
+
+/* Largura específica das colunas */
+th:nth-child(2), td:nth-child(2) {  /* Company */
+    min-width: 150px !important;
+    max-width: 150px !important;
+    width: 150px !important;
+}
+th:nth-child(5), td:nth-child(5) {  /* Tag */
+    min-width: 220px !important;
+    max-width: 220px !important;
+    width: 220px !important;
+    font-size: 22px !important;
+    color: #ffcc00 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ===== Funções auxiliares =====
 @st.cache_data(ttl=300)
 def load_symbols_from_sheets(sheet_url):
     try:
@@ -61,55 +112,9 @@ def get_ticker_info(symbol):
     except:
         return None
 
-# ===== Renderizador customizado =====
+# ===== Renderizador simples =====
 def render_html_table_visualizar(df):
-    html_table = df.to_html(escape=False, index=False)
-
-    # Fonte global
-    html_table = html_table.replace(
-        '<table',
-        '<table style="width:100%; border-collapse:collapse; border:none !important; '
-        'outline:none !important; font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
-    )
-
-    # Cabeçalho
-    html_table = html_table.replace(
-        '<th',
-        '<th style="font-size:20px; font-weight:bold; padding:12px; '
-        'background-color:#2a323b; color:white; text-align:center; '
-        'border:none !important; outline:none !important; '
-        'font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
-    )
-
-    # Células
-    html_table = html_table.replace(
-        '<td',
-        '<td style="font-size:18px; padding:10px; text-align:center; '
-        'color:#eee; border:none !important; outline:none !important; '
-        'font-family:\'Segoe UI\', Roboto, Helvetica, Arial, sans-serif !important;"'
-    )
-
-    # Alternar cor das linhas (zebra)
-    rows = html_table.split("<tr>")
-    for i in range(1, len(rows)):
-        if i % 2 == 1:  # ímpar → escuro
-            rows[i] = '<tr style="background-color:#15191f;">' + rows[i]
-        else:           # par → claro
-            rows[i] = '<tr style="background-color:#1b1f24;">' + rows[i]
-    html_table = "<tr>".join(rows)
-
-    # Ajuste colunas
-    html_table = html_table.replace(
-        '<th>Company</th>',
-        '<th style="min-width:150px; max-width:150px; width:150px !important;">Company</th>'
-    )
-    html_table = html_table.replace(
-        '<th>Tag</th>',
-        '<th style="min-width:220px; max-width:220px; width:220px !important; '
-        'font-size:22px; color:#ffcc00;">Tag</th>'
-    )
-
-    return html_table
+    return df.to_html(escape=False, index=False)
 
 # ===== MAIN =====
 def main():
