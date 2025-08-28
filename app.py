@@ -21,6 +21,13 @@ table, th, td {
     outline: none !important;
 }
 
+/* Forçar tabela a ocupar a tela */
+table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+}
+
 /* Cabeçalho */
 th {
     background-color: #2a323b !important;
@@ -47,18 +54,33 @@ tr:nth-child(even) {
     background-color: #1b1f24 !important;
 }
 
-/* Coluna Company (fixa, sem quebra de linha, com ...) */
+/* Symbol */
+th:nth-child(1), td:nth-child(1) {
+    width: 100px !important;
+}
+
+/* Company */
 th:nth-child(2), td:nth-child(2) {
-    min-width: 150px !important;
-    max-width: 150px !important;
-    width: 150px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    width: 200px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    text-align: left !important; /* opcional: alinhar à esquerda */
+    text-align: left !important;
 }
 
-/* Coluna Tag (fixa, destacada) */
+/* Sector SPDR */
+th:nth-child(3), td:nth-child(3) {
+    width: 220px !important;
+}
+
+/* ETF Symbol */
+th:nth-child(4), td:nth-child(4) {
+    width: 120px !important;
+}
+
+/* Tag */
 th:nth-child(5), td:nth-child(5) {
     min-width: 220px !important;
     max-width: 220px !important;
