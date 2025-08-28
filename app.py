@@ -23,6 +23,36 @@ st.markdown("""
 html, body, [class*="css"] {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
+
+/* Forçar fonte maior em todas as tabelas do Streamlit */
+.stDataFrame table, .stDataFrame th, .stDataFrame td,
+[data-testid="stDataFrame"] table, [data-testid="stDataFrame"] th, [data-testid="stDataFrame"] td,
+div[data-testid="stDataFrame"] table, div[data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] td {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 24px !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Cabeçalhos específicos */
+.stDataFrame th, [data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] th {
+    background-color: #2a323b !important;
+    color: white !important;
+    font-size: 26px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    padding: 14px !important;
+}
+
+/* Células específicas */
+.stDataFrame td, [data-testid="stDataFrame"] td, div[data-testid="stDataFrame"] td {
+    font-size: 24px !important;
+    text-align: center !important;
+    color: #eee !important;
+    padding: 12px !important;
+}
+
+/* CSS original mantido para compatibilidade */
 table, th, td {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
     border: none !important;
@@ -37,14 +67,14 @@ table {
 th {
     background-color: #2a323b !important;
     color: white !important;
-    font-size: 28px !important;   /* aumentado de 22px para 28px */
+    font-size: 26px !important;
     font-weight: bold !important;
     text-align: center !important;
     padding: 14px !important;
 }
 /* Células */
 td {
-    font-size: 26px !important;   /* aumentado de 20px para 26px */
+    font-size: 24px !important;
     text-align: center !important;
     color: #eee !important;
     padding: 12px !important;
@@ -64,7 +94,7 @@ th:nth-child(3), td:nth-child(3) { width: 220px !important; }
 th:nth-child(4), td:nth-child(4) { width: 120px !important; }
 th:nth-child(5), td:nth-child(5) {
     width: 220px !important;
-    font-size: 28px !important;   /* aumentado de 24px para 28px */
+    font-size: 26px !important;
     color: #ffcc00 !important;
 }
 div.stButton > button {
