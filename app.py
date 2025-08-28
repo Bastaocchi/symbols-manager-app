@@ -64,8 +64,16 @@ th:nth-child(1), td:nth-child(1) {
     width: 100px !important;
 }
 
-/* Company */
-th:nth-child(2), td:nth-child(2) {
+/* Cabeçalho da Company centralizado */
+th:nth-child(2) {
+    min-width: 200px !important;
+    max-width: 200px !important;
+    width: 200px !important;
+    text-align: center !important;
+}
+
+/* Conteúdo da Company alinhado à esquerda */
+td:nth-child(2) {
     min-width: 200px !important;
     max-width: 200px !important;
     width: 200px !important;
@@ -151,7 +159,7 @@ def render_html_table_visualizar(df):
 
 # ===== MAIN =====
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="text-align:center; font-size:3.5rem; margin-bottom:2rem; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
     # Configurações
     st.subheader("⚙️ Configurações")
@@ -224,6 +232,7 @@ def main():
 
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
+
             st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
             csv = display_df.to_csv(index=False)
