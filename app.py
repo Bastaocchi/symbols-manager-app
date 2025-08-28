@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-import yfinance as yf
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import unicodedata
@@ -91,25 +89,6 @@ div.stButton > button:hover {
 .stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
     color: #aaa !important;
 }
-
-/* Aumentar fonte dos formulários */
-.stTextInput > div > div > input,
-.stSelectbox > div > div > div,
-.stNumberInput > div > div > input {
-    font-size: 18px !important;
-    font-family: 'Segoe UI', sans-serif !important;
-}
-
-.stTextInput label,
-.stSelectbox label,
-.stNumberInput label {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-}
-
-.stForm {
-    font-size: 16px !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,21 +105,6 @@ worksheet = client.open_by_key(SHEET_ID).sheet1  # primeira aba
 # =========================
 # FUNÇÕES AUXILIARES
 # =========================
-SECTOR_MAPPING = {
-    "": {"number": 0, "name": "Não selecionado"},
-    "XLC": {"number": 1, "name": "Communication Services"},
-    "XLY": {"number": 2, "name": "Consumer Discretionary"},
-    "XLP": {"number": 3, "name": "Consumer Staples"},
-    "XLE": {"number": 4, "name": "Energy"},
-    "XLF": {"number": 5, "name": "Financials"},
-    "XLV": {"number": 6, "name": "Health Care"},
-    "XLI": {"number": 7, "name": "Industrials"},
-    "XLB": {"number": 8, "name": "Materials"},
-    "XLRE": {"number": 9, "name": "Real Estate"},
-    "XLK": {"number": 10, "name": "Technology"},
-    "XLU": {"number": 11, "name": "Utilities"}
-}
-
 def get_all_tags(df):
     all_tags = set()
     if 'TAGS' in df.columns:
@@ -213,6 +177,7 @@ def main():
     df = load_symbols()
     tab1, tab2, tab3, tab4 = st.tabs(["Visualizar", "Adicionar", "Tags", "Resumo"])
 
+    # TAB 1 - VISUALIZAR
     with tab1:
         st.subheader("Visualizar Símbolos")
         col1, col2, col3 = st.columns(3)
@@ -246,7 +211,7 @@ def main():
             html_table += "<tr>"
             for col in filtered_df.columns:
                 col_str = str(col) if pd.notna(col) else ""
-                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 20px; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #444;'>{col_str}</th>"
+                html_table += f"<th>{col_str}</th>"
             html_table += "</tr>"
 
             for idx, row in filtered_df.iterrows():
@@ -261,7 +226,66 @@ def main():
             html_table += "</table>"
             st.markdown(html_table, unsafe_allow_html=True)
 
-    # tab2, tab3, tab4 (sem mudanças, mantém igual ao que você já tem)
+    # TAB 2 - ADICIONAR
+    with tab2:
+        st.subheader("Adicionar Novo Símbolo")
+        with st.form("add_symbol_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                symbol = st.text_input("Símbolo *")
+                company = st.text_input("Nome da Empresa *")
+                tradingview_sector = st.text_input("TradingView Setor")
+                tradingview_industry = st.text_input("TradingView Indústria")
+            with col2:
+                sector_spdr_value = st.text_input("Setor SPDR")
+                tags = st.text_input("Tags", placeholder="Ex: tech, growth")
+            submitted = st.form_submit_button("Adicionar")
+            if submitted:
+                if not symbol.strip() or not company.strip():
+                    st.error("Campos obrigatórios faltando")
+                else:
+                    symbol_data = {
+                        'Symbol': symbol.upper().strip(),
+                        'Company': company.strip(),
+                        'TradingView_Sector': tradingview_sector.strip(),
+                        'TradingView_Industry': tradingview_industry.strip(),
+                        'Sector_SPDR': sector_spdr_value.strip(),
+                        'TAGS': tags.strip()
+                    }
+                    if add_symbol_to_sheet(symbol_data):
+                        st.balloons()
+
+    # TAB 3 - TAGS
+    with tab3:
+        st.subheader("Gerenciar Tags")
+        if len(df) > 0:
+            symbols_choice = st.multiselect("Escolha símbolos:", df["Symbol"].unique())
+            new_tag = st.text_input("Digite a tag:")
+            if st.button("Aplicar Tag"):
+                if new_tag.strip() and symbols_choice:
+                    for sym in symbols_choice:
+                        update_tag(sym, new_tag.strip())
+                else:
+                    st.error("Selecione símbolos e digite uma tag válida")
+
+    # TAB 4 - RESUMO
+    with tab4:
+        st.subheader("Resumo dos Dados")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1: st.metric("Total de Símbolos", len(df))
+        with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+        with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+        with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
+
+        st.markdown("### Top Setores")
+        if 'Sector_SPDR' in df.columns:
+            for sector, count in df['Sector_SPDR'].value_counts().head(5).items():
+                st.text(f"{sector}: {count}")
+
+        st.markdown("### Tags mais usadas")
+        if 'TAGS' in df.columns:
+            for tag, count in df['TAGS'].value_counts().head(5).items():
+                st.text(f"{tag}: {count}")
 
 if __name__ == "__main__":
     main()
