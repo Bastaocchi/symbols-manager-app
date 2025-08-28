@@ -164,7 +164,36 @@ def main():
     # TAB VISUALIZAR
     with tab1:
         st.subheader("Visualizar Símbolos")
-        st.dataframe(df)
+
+        # --- Filtros ---
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            sector_filter = st.selectbox(
+                "Filtrar por Setor:",
+                ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"]
+            )
+        with col2:
+            etf_filter = st.selectbox(
+                "Filtrar por ETF:",
+                ["Todos"] + sorted(df['ETF_Symbol'].dropna().unique().tolist()) if 'ETF_Symbol' in df.columns else ["Todos"]
+            )
+        with col3:
+            tag_filter = st.selectbox(
+                "Filtrar por Tag:",
+                ["Todas"] + sorted([t for t in df['TAGS'].dropna().unique() if t.strip()]) if 'TAGS' in df.columns else ["Todas"]
+            )
+
+        # --- Aplicar filtros ---
+        filtered_df = df.copy()
+        if sector_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
+            filtered_df = filtered_df[filtered_df['Sector_SPDR'] == sector_filter]
+        if etf_filter != "Todos" and 'ETF_Symbol' in filtered_df.columns:
+            filtered_df = filtered_df[filtered_df['ETF_Symbol'] == etf_filter]
+        if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
+            filtered_df = filtered_df[filtered_df['TAGS'] == tag_filter]
+
+        st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
+        st.dataframe(filtered_df)
 
     # TAB ADICIONAR (rascunho)
     with tab2:
