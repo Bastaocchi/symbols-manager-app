@@ -101,6 +101,68 @@ th:nth-child(5), td:nth-child(5) {
     font-size: 22px !important;
     color: #ffcc00 !important;
 }
+
+/* Botões sóbrios */
+div.stButton > button {
+    background-color: #2a2f36 !important;
+    color: #ffffff !important;
+    border: 1px solid #444 !important;
+    border-radius: 6px !important;
+    padding: 8px 20px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover dos botões */
+div.stButton > button:hover {
+    background-color: #3a3f47 !important;
+    border-color: #666 !important;
+    color: #ffffff !important;
+    cursor: pointer;
+}
+
+/* ===== Overrides dos Alerts (info, warning, success, error) ===== */
+div.stAlert, div[data-testid="stNotification"], div[data-baseweb="toast"] {
+    background-color: #1b1f24 !important;
+    color: #ddd !important;
+    border: 1px solid #2a323b !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    padding: 10px 15px !important;
+    box-shadow: none !important;
+}
+
+/* Remove a barra azul à esquerda */
+div.stAlert::before,
+div[data-testid="stNotification"]::before,
+div[data-baseweb="toast"]::before {
+    background: none !important;
+    display: none !important;
+}
+
+/* Links dentro do alerta */
+div.stAlert a {
+    color: #ffcc00 !important;
+    text-decoration: none !important;
+}
+div.stAlert a:hover {
+    text-decoration: underline !important;
+}
+
+/* ===== Tabs ===== */
+/* Aba ativa */
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {
+    color: #ff9900 !important;
+    font-weight: 600 !important;
+    border-bottom: 3px solid #ff9900 !important;
+}
+/* Abas inativas */
+.stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
+    color: #aaa !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -172,7 +234,7 @@ def main():
         )
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Recarregar", type="primary"):
+        if st.button("Recarregar"):   # Botão sóbrio
             st.cache_data.clear()
             st.rerun()
 
@@ -256,7 +318,7 @@ def main():
 
     with tab4:
         st.subheader("Estatísticas Detalhadas")
-        st.write("Em breve gráficos bonitos aqui 😉")
+        st.write("Em breve gráficos aqui")
 
 if __name__ == "__main__":
     main()
