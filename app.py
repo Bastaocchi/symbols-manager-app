@@ -224,17 +224,7 @@ def main():
 
     df = load_symbols()
 
-    st.markdown("---")
-    st.subheader("Resumo dos Dados")
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1: st.metric("Total de Símbolos", len(df))
-    with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
-    with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-    with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
-    with col5: st.metric("Status", "Carregado", delta="Online")
-
-    st.markdown("---")
-    tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Visualizar", "Adicionar", "Tags", "Resumo"])
 
     # TAB VISUALIZAR
     with tab1:
@@ -419,6 +409,58 @@ def main():
                         update_tag(sym, new_tag.strip())
                 else:
                     st.error("Selecione pelo menos um símbolo e digite uma tag válida")
+
+    # TAB RESUMO
+    with tab4:
+        st.subheader("Resumo dos Dados")
+        
+        # Métricas principais
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1: st.metric("Total de Símbolos", len(df))
+        with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+        with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+        with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
+        with col5: st.metric("Status", "Carregado", delta="Online")
+        
+        st.markdown("---")
+        
+        # Seções detalhadas
+        col_left, col_right = st.columns(2)
+        
+        with col_left:
+            st.subheader("📊 Top 10 Setores SPDR")
+            if 'Sector_SPDR' in df.columns:
+                sectors = df['Sector_SPDR'].value_counts().head(10)
+                for sector, count in sectors.items():
+                    if sector and str(sector).strip():
+                        st.text(f"• {sector}: {count} símbolos")
+            
+            st.markdown("---")
+            
+            st.subheader("🏷️ Tags Mais Usadas")
+            if 'TAGS' in df.columns:
+                tags = df[df['TAGS'].str.strip() != '']['TAGS'].value_counts().head(10)
+                for tag, count in tags.items():
+                    if tag and str(tag).strip():
+                        st.text(f"• {tag}: {count} símbolos")
+        
+        with col_right:
+            st.subheader("🏭 Top 10 Indústrias")
+            if 'TradingView_Industry' in df.columns:
+                industries = df['TradingView_Industry'].value_counts().head(10)
+                for industry, count in industries.items():
+                    if industry and str(industry).strip():
+                        st.text(f"• {industry}: {count} símbolos")
+            
+            st.markdown("---")
+            
+            st.subheader("📈 Estatísticas Gerais")
+            st.text(f"• Símbolos com tags: {len(df[df['TAGS'].str.strip() != '']) if 'TAGS' in df.columns else 0}")
+            st.text(f"• Símbolos sem tags: {len(df[df['TAGS'].str.strip() == '']) if 'TAGS' in df.columns else 0}")
+            if 'Company' in df.columns:
+                st.text(f"• Empresas únicas: {len(df['Company'].dropna().unique())}")
+            if 'Symbol' in df.columns:
+                st.text(f"• Símbolos únicos: {len(df['Symbol'].dropna().unique())}")
 
 if __name__ == "__main__":
     main()
