@@ -1,5 +1,4 @@
-# Função para carregar dados do Google Sheets
-@st.cache_data(ttl=300)  # Cache por 5 minutosimport streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -53,6 +52,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Função para carregar dados do Google Sheets
+@st.cache_data(ttl=300)  # Cache por 5 minutos
 def load_symbols_from_sheets(sheet_url):
     """Carrega símbolos do Google Sheets"""
     try:
