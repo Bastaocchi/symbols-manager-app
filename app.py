@@ -5,6 +5,7 @@ import yfinance as yf
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import unicodedata
+import re
 
 # =========================
 # CONFIGURAÇÃO DA PÁGINA
@@ -141,7 +142,20 @@ SECTOR_MAPPING = {
     "XLU": {"number": 11, "name": "Utilities"}
 }
 
-def normalize_text(text):
+def get_all_tags(df):
+    """Extrai todas as tags individuais do DataFrame, separando por vírgula, espaço, etc."""
+    all_tags = set()
+    if 'TAGS' in df.columns:
+        for tags_cell in df['TAGS'].dropna():
+            if str(tags_cell).strip():
+                # Separar por vírgula, ponto e vírgula, pipe ou espaço duplo
+                import re
+                tags_list = re.split(r'[,;|\s]{2,}|\s*,\s*|\s*;\s*|\s*\|\s*', str(tags_cell))
+                for tag in tags_list:
+                    tag = tag.strip()
+                    if tag:
+                        all_tags.add(tag)
+    return sorted(list(all_tags))
     """Remove acentos e converte para minúsculo para busca flexível"""
     if pd.isna(text):
         return ""
@@ -243,9 +257,11 @@ def main():
                 ["Todos"] + sorted(df['Sector_SPDR'].dropna().unique().tolist()) if 'Sector_SPDR' in df.columns else ["Todos"]
             )
         with col3:
+            # Filtro de tags individuais
+            all_individual_tags = get_all_tags(df)
             tag_filter = st.selectbox(
                 "Filtrar por Tag:",
-                ["Todas"] + sorted([t for t in df['TAGS'].dropna().unique() if t.strip()]) if 'TAGS' in df.columns else ["Todas"]
+                ["Todas"] + all_individual_tags
             )
 
         # --- Busca global ---
@@ -258,7 +274,12 @@ def main():
         if etf_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
             filtered_df = filtered_df[filtered_df['Sector_SPDR'] == etf_filter]
         if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df['TAGS'] == tag_filter]
+            # Filtrar linhas que contêm a tag específica
+            mask = filtered_df['TAGS'].apply(
+                lambda tags_cell: tag_filter in [tag.strip() for tag in re.split(r'[,;|\s]{2,}|\s*,\s*|\s*;\s*|\s*\|\s*', str(tags_cell)) if tag.strip()]
+                if pd.notna(tags_cell) else False
+            )
+            filtered_df = filtered_df[mask]
         if search_term:
             # Normalizar o termo de busca (remover acentos e converter para minúsculo)
             normalized_search = normalize_text(search_term)
