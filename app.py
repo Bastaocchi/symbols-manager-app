@@ -226,17 +226,17 @@ def main():
             # Cabeçalho
             html_table += "<tr>"
             for col in filtered_df.columns:
-                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 24px; font-weight: bold; text-align: center; padding: 16px; border: 1px solid #444; height: 60px; vertical-align: middle;'>{col}</th>"
+                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 24px; font-weight: bold; text-align: center; padding: 16px; border: 1px solid #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{col}</th>"
             html_table += "</tr>"
             
             # Linhas de dados
             for idx, row in filtered_df.iterrows():
                 bg_color = "#15191f" if idx % 2 == 0 else "#1b1f24"
-                html_table += f"<tr style='background-color: {bg_color}; height: 50px;'>"
+                html_table += f"<tr style='background-color: {bg_color};'>"
                 for col in filtered_df.columns:
                     value = str(row[col]) if pd.notna(row[col]) else ""
                     color = "#ffcc00" if col == "TAGS" else "#eee"
-                    html_table += f"<td style='font-size: 24px; text-align: center; color: {color}; padding: 16px; border: 1px solid #444; height: 50px; vertical-align: middle; line-height: 1.2;'>{value}</td>"
+                    html_table += f"<td style='font-size: 24px; text-align: center; color: {color}; padding: 16px; border: 1px solid #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{value}</td>"
                 html_table += "</tr>"
             
             html_table += "</table>"
