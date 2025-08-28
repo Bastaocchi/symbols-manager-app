@@ -104,10 +104,10 @@ th:nth-child(5), td:nth-child(5) {
 
 /* Botões sóbrios */
 div.stButton > button {
-    background-color: #2a2f36 !important;   /* fundo cinza escuro */
-    color: #ffffff !important;              /* texto branco */
-    border: 1px solid #444 !important;      /* borda discreta */
-    border-radius: 6px !important;          /* cantos levemente arredondados */
+    background-color: #2a2f36 !important;
+    color: #ffffff !important;
+    border: 1px solid #444 !important;
+    border-radius: 6px !important;
     padding: 8px 20px !important;
     font-size: 16px !important;
     font-weight: 500 !important;
@@ -121,6 +121,17 @@ div.stButton > button:hover {
     border-color: #666 !important;
     color: #ffffff !important;
     cursor: pointer;
+}
+
+/* Avisos (st.info, st.warning, st.success, st.error) */
+div.stAlert[data-baseweb="alert"] {
+    background-color: #1b1f24 !important;
+    color: #ddd !important;
+    border: 1px solid #2a323b !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    padding: 10px 15px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -277,7 +288,7 @@ def main():
 
     with tab4:
         st.subheader("Estatísticas Detalhadas")
-        st.write("Em breve gráficos bonitos aqui 😉")
+        st.write("Em breve gráficos aqui")
 
 if __name__ == "__main__":
     main()
