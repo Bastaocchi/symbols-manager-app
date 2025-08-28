@@ -47,13 +47,19 @@ tr:nth-child(even) {
     background-color: #1b1f24 !important;
 }
 
-/* Largura específica das colunas */
-th:nth-child(2), td:nth-child(2) {  /* Company */
+/* Coluna Company (fixa, sem quebra de linha, com ...) */
+th:nth-child(2), td:nth-child(2) {
     min-width: 150px !important;
     max-width: 150px !important;
     width: 150px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: left !important; /* opcional: alinhar à esquerda */
 }
-th:nth-child(5), td:nth-child(5) {  /* Tag */
+
+/* Coluna Tag (fixa, destacada) */
+th:nth-child(5), td:nth-child(5) {
     min-width: 220px !important;
     max-width: 220px !important;
     width: 220px !important;
@@ -191,8 +197,6 @@ def main():
 
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
-            if 'Company' in display_df.columns:
-                display_df['Company'] = display_df['Company'].str[:80]
 
             st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
