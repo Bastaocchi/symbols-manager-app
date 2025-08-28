@@ -111,7 +111,8 @@ def load_symbols():
     # Remover colunas "Column X" extras
     df = df[[col for col in df.columns if not col.startswith("Column")]]
 
-    # Garantir coluna TAGS
+    # Padronizar coluna TAGS
+    df = df.rename(columns={c: "TAGS" for c in df.columns if c.lower() == "tag" or c.lower() == "tags"})
     if "TAGS" not in df.columns:
         df["TAGS"] = ""
 
@@ -121,7 +122,6 @@ def update_tag(symbol, tag_value):
     records = worksheet.get_all_records()
     df = pd.DataFrame(records)
 
-    # Encontrar índice da linha
     try:
         row_idx = df.index[df["Symbol"] == symbol][0] + 2  # +2 por causa do header
         col_idx = df.columns.get_loc("TAGS") + 1
@@ -135,6 +135,11 @@ def update_tag(symbol, tag_value):
 # =========================
 def main():
     st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+
+    # Botão Recarregar
+    if st.button("🔄 Recarregar Planilha"):
+        st.cache_data.clear()
+        st.rerun()
 
     df = load_symbols()
 
