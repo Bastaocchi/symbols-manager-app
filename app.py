@@ -140,16 +140,11 @@ def update_tag(symbol, tag_value):
 # MAIN APP
 # =========================
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
-
-    # Botão Recarregar
-    if st.button("🔄 Recarregar Planilha"):
-        st.cache_data.clear()
-        st.rerun()
+    # 🔽 Título menor, alinhado à esquerda
+    st.markdown('<h1 style="text-align:left; font-size:2rem; margin-bottom:1rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
     df = load_symbols()
 
-    st.markdown("---")
     tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
 
     # TAB VISUALIZAR
@@ -201,6 +196,11 @@ def main():
         with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
         with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
         with col5: st.metric("Status", "Carregado", delta="Online")
+
+        # 🔽 Botão recarregar também embaixo
+        if st.button("🔄 Recarregar Planilha"):
+            st.cache_data.clear()
+            st.rerun()
 
     # TAB ADICIONAR (rascunho)
     with tab2:
