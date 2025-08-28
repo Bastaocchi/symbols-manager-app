@@ -14,6 +14,11 @@ st.set_page_config(
 # ===== CSS GLOBAL =====
 st.markdown("""
 <style>
+/* Fonte global no app inteiro */
+html, body, [class*="css"] {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
 /* Fonte geral da tabela */
 table, th, td {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
@@ -146,7 +151,7 @@ def render_html_table_visualizar(df):
 
 # ===== MAIN =====
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;">📊 Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
     # Configurações
     st.subheader("⚙️ Configurações")
@@ -219,7 +224,6 @@ def main():
 
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
-
             st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
             csv = display_df.to_csv(index=False)
