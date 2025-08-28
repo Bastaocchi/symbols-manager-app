@@ -89,7 +89,7 @@ div.stButton > button:hover {
     color: #aaa !important;
 }
 
-/* 🔽 Reduz espaço no topo (traz o título mais pra cima) */
+/* 🔽 Reduz espaço no topo */
 section.main > div:first-child {
     padding-top: 0rem !important;
     margin-top: -2rem !important;
@@ -146,8 +146,8 @@ def update_tag(symbol, tag_value):
 # MAIN APP
 # =========================
 def main():
-    # 🔽 Título menor, alinhado à esquerda e puxado mais pra cima
-    st.markdown('<h1 style="text-align:left; font-size:2rem; margin-bottom:1rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    # 🔽 Marca d’água discreta no topo
+    st.markdown('<p style="text-align:left; font-size:14px; color:#888; margin-bottom:0.5rem;">Gerenciador de Símbolos</p>', unsafe_allow_html=True)
 
     df = load_symbols()
 
