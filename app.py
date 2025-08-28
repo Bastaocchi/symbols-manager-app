@@ -50,16 +50,16 @@ td {
 tr:nth-child(odd) { background-color: #15191f !important; }
 tr:nth-child(even) { background-color: #1b1f24 !important; }
 th:nth-child(1), td:nth-child(1) { width: 100px !important; }
-th:nth-child(2) { width: 200px !important; text-align: center !important; }
+th:nth-child(2) { width: 300px !important; text-align: center !important; }
 td:nth-child(2) {
-    width: 200px !important;
+    width: 300px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     text-align: left !important;
 }
 th:nth-child(3), td:nth-child(3) { width: 220px !important; }
-th:nth-child(4), td:nth-child(4) { width: 120px !important; }
+th:nth-child(4), td:nth-child(4) { width: 200px !important; }
 th:nth-child(5), td:nth-child(5) {
     width: 220px !important;
     font-size: 22px !important;
