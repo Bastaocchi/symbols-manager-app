@@ -14,15 +14,9 @@ st.set_page_config(
 # ===== CSS GLOBAL =====
 st.markdown("""
 <style>
-/* Fonte global (troque Inter por outra se quiser) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif !important;
-}
-
 /* Fonte geral da tabela */
 table, th, td {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
     border: none !important;
     outline: none !important;
 }
@@ -147,7 +141,7 @@ def get_ticker_info(symbol):
         return None
 
 # ===== Renderizador simples =====
-def render_html_table(df):
+def render_html_table_visualizar(df):
     return df.to_html(escape=False, index=False)
 
 # ===== MAIN =====
@@ -225,7 +219,8 @@ def main():
 
         if len(filtered_df) > 0:
             display_df = filtered_df[available_columns].copy()
-            st.markdown(render_html_table(display_df), unsafe_allow_html=True)
+
+            st.markdown(render_html_table_visualizar(display_df), unsafe_allow_html=True)
 
             csv = display_df.to_csv(index=False)
             st.download_button(
@@ -248,14 +243,7 @@ def main():
 
     with tab4:
         st.subheader("📊 Estatísticas Detalhadas")
-        if 'Sector_SPDR' in df.columns:
-            dist = df['Sector_SPDR'].value_counts().reset_index()
-            dist.columns = ['Sector_SPDR', 'Qtd']
-            st.markdown(render_html_table(dist), unsafe_allow_html=True)
-        if 'ETF_Symbol' in df.columns:
-            dist = df['ETF_Symbol'].value_counts().reset_index()
-            dist.columns = ['ETF_Symbol', 'Qtd']
-            st.markdown(render_html_table(dist), unsafe_allow_html=True)
+        st.write("🔧 Em breve gráficos bonitos aqui 😉")
 
 if __name__ == "__main__":
     main()
