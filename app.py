@@ -1,181 +1,107 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-import yfinance as yf
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import os
 
-# =========================
-# CONFIGURAÇÃO DA PÁGINA
-# =========================
-st.set_page_config(
-    page_title="Gerenciador de Símbolos",
-    page_icon=None,
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ===============================
+# CONFIGURAÇÃO INICIAL
+# ===============================
+FILE_PATH = "symbols.xlsx"
 
-# =========================
-# CSS GLOBAL
-# =========================
-st.markdown("""
-<style>
-html, body, [class*="css"] {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-}
-table, th, td {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-    border: none !important;
-    outline: none !important;
-}
-table {
-    width: 100% !important;
-    table-layout: fixed !important;
-    border-collapse: collapse !important;
-}
-th {
-    background-color: #2a323b !important;
-    color: white !important;
-    font-size: 20px !important;
-    font-weight: bold !important;
-    text-align: center !important;
-    padding: 12px !important;
-}
-td {
-    font-size: 18px !important;
-    text-align: center !important;
-    color: #eee !important;
-    padding: 10px !important;
-}
-tr:nth-child(odd) { background-color: #15191f !important; }
-tr:nth-child(even) { background-color: #1b1f24 !important; }
-th:nth-child(1), td:nth-child(1) { width: 100px !important; }
-th:nth-child(2) { width: 200px !important; text-align: center !important; }
-td:nth-child(2) {
-    width: 200px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    text-align: left !important;
-}
-th:nth-child(3), td:nth-child(3) { width: 220px !important; }
-th:nth-child(4), td:nth-child(4) { width: 120px !important; }
-th:nth-child(5), td:nth-child(5) {
-    width: 220px !important;
-    font-size: 22px !important;
-    color: #ffcc00 !important;
-}
-div.stButton > button {
-    background-color: #2a2f36 !important;
-    color: #ffffff !important;
-    border: 1px solid #444 !important;
-    border-radius: 6px !important;
-    padding: 8px 20px !important;
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    font-family: 'Segoe UI', sans-serif !important;
-}
-div.stButton > button:hover {
-    background-color: #3a3f47 !important;
-    border-color: #666 !important;
-    cursor: pointer;
-}
-.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {
-    color: #ff9900 !important;
-    font-weight: 600 !important;
-    border-bottom: 3px solid #ff9900 !important;
-}
-.stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
-    color: #aaa !important;
-}
-</style>
-""", unsafe_allow_html=True)
+if not os.path.exists(FILE_PATH):
+    df_init = pd.DataFrame(columns=["SYMBOL", "TAGS"])
+    df_init.to_excel(FILE_PATH, index=False)
 
-# =========================
-# CONEXÃO COM GOOGLE SHEETS
-# =========================
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(st.secrets["google_sheets"]), scope)
-client = gspread.authorize(creds)
-
-SHEET_ID = "1NMCkkcrTFOm1ZoOiImzzRRFd6NEn5kMPTkuc5j_3DcQ"
-worksheet = client.open_by_key(SHEET_ID).sheet1  # primeira aba
-
-# =========================
+# ===============================
 # FUNÇÕES AUXILIARES
-# =========================
-def load_symbols():
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
+# ===============================
+def load_data():
+    return pd.read_excel(FILE_PATH)
 
-    # Remover colunas "Column X" extras
-    df = df[[col for col in df.columns if not col.startswith("Column")]]
+def save_data(df):
+    df.to_excel(FILE_PATH, index=False)
 
-    # Padronizar coluna TAGS
-    df = df.rename(columns={c: "TAGS" for c in df.columns if c.lower() == "tag" or c.lower() == "tags"})
-    if "TAGS" not in df.columns:
-        df["TAGS"] = ""
+def add_symbols(symbols):
+    df = load_data()
+    for symbol in symbols:
+        if symbol not in df["SYMBOL"].values:
+            df = pd.concat([df, pd.DataFrame({"SYMBOL": [symbol], "TAGS": [""]})], ignore_index=True)
+    save_data(df)
 
-    return df
+def update_tag(symbols, new_tag):
+    df = load_data()
+    for symbol in symbols:
+        if symbol in df["SYMBOL"].values:
+            idx = df.index[df["SYMBOL"] == symbol][0]
+            current_tags = str(df.at[idx, "TAGS"])
+            if current_tags.strip() == "" or current_tags.lower() == "nan":
+                df.at[idx, "TAGS"] = new_tag
+            else:
+                # evita tags duplicadas
+                tags_list = [t.strip() for t in current_tags.split(",")]
+                if new_tag not in tags_list:
+                    tags_list.append(new_tag)
+                df.at[idx, "TAGS"] = ", ".join(tags_list)
+    save_data(df)
 
-def update_tag(symbol, tag_value):
-    records = worksheet.get_all_records()
-    df = pd.DataFrame(records)
+def clear_tags(symbols):
+    df = load_data()
+    for symbol in symbols:
+        if symbol in df["SYMBOL"].values:
+            idx = df.index[df["SYMBOL"] == symbol][0]
+            df.at[idx, "TAGS"] = ""
+    save_data(df)
 
-    try:
-        row_idx = df.index[df["Symbol"] == symbol][0] + 2  # +2 por causa do header
-        col_idx = df.columns.get_loc("TAGS") + 1
-        worksheet.update_cell(row_idx, col_idx, tag_value)
-        st.success(f"Tag '{tag_value}' adicionada ao símbolo {symbol}")
-    except IndexError:
-        st.error("Símbolo não encontrado na planilha")
-
-# =========================
-# MAIN APP
-# =========================
+# ===============================
+# INTERFACE STREAMLIT
+# ===============================
 def main():
-    st.markdown('<h1 style="text-align:center; font-size:3rem; margin-bottom:2rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
+    st.title("📊 Symbols Manager - Tags por múltiplos símbolos")
 
-    # Botão Recarregar
-    if st.button("🔄 Recarregar Planilha"):
-        st.cache_data.clear()
-        st.rerun()
+    menu = ["Ver Símbolos", "Adicionar Símbolos", "Gerenciar Tags"]
+    choice = st.sidebar.radio("Menu", menu)
 
-    df = load_symbols()
+    df = load_data()
 
-    st.markdown("---")
-    st.subheader("Resumo dos Dados")
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1: st.metric("Total de Símbolos", len(df))
-    with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
-    with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-    with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
-    with col5: st.metric("Status", "Carregado", delta="Online")
-
-    st.markdown("---")
-    tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
-
-    # TAB VISUALIZAR
-    with tab1:
-        st.subheader("Visualizar Símbolos")
+    if choice == "Ver Símbolos":
+        st.subheader("Lista de Símbolos")
         st.dataframe(df)
 
-    # TAB ADICIONAR (rascunho)
-    with tab2:
-        st.subheader("Adicionar Novo Símbolo")
-        st.info("Funcionalidade em construção")
+    elif choice == "Adicionar Símbolos":
+        st.subheader("Adicionar novos símbolos")
+        symbols_input = st.text_area("Digite os símbolos separados por vírgula:")
+        if st.button("Adicionar"):
+            symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
+            add_symbols(symbols)
+            st.success(f"Símbolos adicionados: {', '.join(symbols)}")
 
-    # TAB TAGS LIVRES
-    with tab3:
-        st.subheader("Gerenciar Tags")
-        if len(df) > 0:
-            symbol_choice = st.selectbox("Escolha o símbolo:", df["Symbol"].unique())
-            new_tag = st.text_input("Digite a tag (livre):")
-            if st.button("Aplicar Tag"):
-                if new_tag.strip():
-                    update_tag(symbol_choice, new_tag.strip())
+    elif choice == "Gerenciar Tags":
+        st.subheader("Adicionar/Remover Tags de Múltiplos Símbolos")
+
+        symbols_input = st.text_area("Digite os símbolos separados por vírgula:")
+        new_tag = st.text_input("Nova Tag")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("➕ Adicionar Tag"):
+                if symbols_input and new_tag:
+                    symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
+                    update_tag(symbols, new_tag.strip())
+                    st.success(f"Tag '{new_tag}' adicionada a: {', '.join(symbols)}")
                 else:
-                    st.error("Digite uma tag válida")
+                    st.warning("Informe símbolos e a tag.")
+
+        with col2:
+            if st.button("🗑️ Limpar Tags"):
+                if symbols_input:
+                    symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
+                    clear_tags(symbols)
+                    st.success(f"Tags removidas de: {', '.join(symbols)}")
+                else:
+                    st.warning("Informe símbolos para limpar as tags.")
+
+        st.write("### Visualização Atualizada")
+        st.dataframe(load_data())
 
 if __name__ == "__main__":
     main()
