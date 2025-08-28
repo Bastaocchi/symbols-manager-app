@@ -131,51 +131,63 @@ def main():
     st.markdown('<h1 class="main-header">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
     st.markdown("**Gerencie seus tickers, setores e tags para análise**")
     
-    # Sidebar
-    st.sidebar.header("⚙️ Configurações")
+    # Configurações no topo
+    st.subheader("⚙️ Configurações")
     
-    # URL do Google Sheets
-    sheet_url = st.sidebar.text_input(
-        "🔗 URL do Google Sheets:",
-        value="https://docs.google.com/spreadsheets/d/1NMCkkcrTFOm1ZoOiImzzRRFd6NEn5kMPTkuc5j_3DcQ/edit?gid=744859441#gid=744859441",
-        help="Cole a URL do seu Google Sheets público"
-    )
+    col1, col2 = st.columns([3, 1])
     
-    # Botão para recarregar dados
-    if st.sidebar.button("🔄 Recarregar do Sheets"):
-        st.cache_data.clear()
-        st.rerun()
+    with col1:
+        # URL do Google Sheets
+        sheet_url = st.text_input(
+            "🔗 URL do Google Sheets:",
+            value="https://docs.google.com/spreadsheets/d/1NMCkkcrTFOm1ZoOiImzzRRFd6NEn5kMPTkuc5j_3DcQ/edit?gid=744859441#gid=744859441",
+            help="Cole a URL do seu Google Sheets público"
+        )
     
-    # Separador
-    st.sidebar.markdown("---")
+    with col2:
+        # Botão para recarregar dados
+        st.markdown("<br>", unsafe_allow_html=True)  # Espaço para alinhar
+        if st.button("🔄 Recarregar do Sheets", type="primary"):
+            st.cache_data.clear()
+            st.rerun()
     
     # Carregar dados
     if sheet_url:
         df = load_symbols_from_sheets(sheet_url)
         
         if df is not None:
-            st.sidebar.success(f"✅ {len(df)} símbolos carregados")
+            # Estatísticas no topo
+            st.markdown("---")
+            st.subheader("📊 Resumo dos Dados")
             
-            # Estatísticas na sidebar
-            st.sidebar.subheader("📊 Estatísticas")
+            col1, col2, col3, col4, col5 = st.columns(5)
+            
             total_symbols = len(df)
             unique_sectors = len(df['TradingView_Sector'].dropna().unique()) if 'TradingView_Sector' in df.columns else 0
             unique_industries = len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0
             symbols_with_tags = len(df[df['Tag'].str.strip() != ""]) if 'Tag' in df.columns else 0
+            unique_spdr_sectors = len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0
             
-            st.sidebar.metric("Total de Símbolos", total_symbols)
-            st.sidebar.metric("Setores Únicos", unique_sectors)
-            st.sidebar.metric("Indústrias Únicas", unique_industries)
-            st.sidebar.metric("Com Tags", symbols_with_tags)
+            with col1:
+                st.metric("📈 Total de Símbolos", total_symbols)
+            with col2:
+                st.metric("🏭 Setores SPDR", unique_spdr_sectors)
+            with col3:
+                st.metric("🔬 Indústrias", unique_industries)
+            with col4:
+                st.metric("🏷️ Com Tags", symbols_with_tags)
+            with col5:
+                st.metric("✅ Status", "Carregado", delta="Online")
         else:
             st.error("❌ Não foi possível carregar os dados do Google Sheets")
             return
     else:
-        st.warning("⚠️ Por favor, insira a URL do Google Sheets na sidebar")
+        st.warning("⚠️ Por favor, insira a URL do Google Sheets")
         return
     
     # Tabs principais
-    tab1, tab2, tab3, tab4 = st.tabs(["📋 Visualizar", "➕ Adicionar", "🏷️ Gerenciar Tags", "📊 Estatísticas"])
+    st.markdown("---")
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 Visualizar", "➕ Adicionar", "🏷️ Gerenciar Tags", "📊 Estatísticas Detalhadas"])
     
     with tab1:
         st.subheader("📋 Visualizar Símbolos")
@@ -359,26 +371,6 @@ def main():
     
     with tab4:
         st.subheader("📊 Estatísticas Detalhadas")
-        
-        # Métricas principais
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("📈 Total de Símbolos", len(df))
-        
-        with col2:
-            unique_companies = len(df['Company'].dropna().unique()) if 'Company' in df.columns else 0
-            st.metric("🏢 Empresas Únicas", unique_companies)
-        
-        with col3:
-            if 'Sector_SPDR' in df.columns:
-                unique_sectors = len(df['Sector_SPDR'].dropna().unique())
-                st.metric("🏭 Setores", unique_sectors)
-        
-        with col4:
-            if 'Tag' in df.columns:
-                tagged_symbols = len(df[df['Tag'].str.strip() != ""])
-                st.metric("🏷️ Com Tags", tagged_symbols)
         
         # Distribuição por setor
         if 'Sector_SPDR' in df.columns:
