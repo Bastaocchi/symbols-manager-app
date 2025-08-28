@@ -218,7 +218,35 @@ def main():
             filtered_df = filtered_df[mask]
 
         st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
-        st.dataframe(filtered_df, use_container_width=True, height=800)
+        
+        # Renderizar tabela como HTML para controlar a fonte
+        if len(filtered_df) > 0:
+            html_table = "<table style='width:100%; border-collapse: collapse;'>"
+            
+            # Cabeçalho
+            html_table += "<tr>"
+            for col in filtered_df.columns:
+                html_table += f"<th style='background-color: #2a323b; color: white; font-size: 24px; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #444;'>{col}</th>"
+            html_table += "</tr>"
+            
+            # Linhas de dados
+            for idx, row in filtered_df.iterrows():
+                bg_color = "#15191f" if idx % 2 == 0 else "#1b1f24"
+                html_table += f"<tr style='background-color: {bg_color};'>"
+                for col in filtered_df.columns:
+                    value = str(row[col]) if pd.notna(row[col]) else ""
+                    color = "#ffcc00" if col == "TAGS" else "#eee"
+                    html_table += f"<td style='font-size: 24px; text-align: center; color: {color}; padding: 12px; border: 1px solid #444;'>{value}</td>"
+                html_table += "</tr>"
+            
+            html_table += "</table>"
+            
+            # Container com scroll para tabela grande
+            st.markdown(f"""
+            <div style="height: 800px; overflow-y: auto; border: 1px solid #444;">
+                {html_table}
+            </div>
+            """, unsafe_allow_html=True)
 
         # 🔽 Resumo agora embaixo da tabela
         st.markdown("---")
