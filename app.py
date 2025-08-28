@@ -123,15 +123,24 @@ div.stButton > button:hover {
     cursor: pointer;
 }
 
-/* Avisos (info, warning, success, error) no padrão dark */
-div.stAlert, div[data-testid="stAlert"], .stAlert {
-    background-color: #1b1f24 !important;
+/* ===== Overrides dos Alerts (info, warning, success, error) ===== */
+div.stAlert, div[data-testid="stNotification"], div[data-baseweb="toast"] {
+    background-color: #1b1f24 !important;  /* fundo padrão da tabela */
     color: #ddd !important;
     border: 1px solid #2a323b !important;
     border-radius: 6px !important;
     font-size: 16px !important;
     font-family: 'Segoe UI', sans-serif !important;
     padding: 10px 15px !important;
+    box-shadow: none !important;
+}
+
+/* Remove a barra azul à esquerda */
+div.stAlert::before,
+div[data-testid="stNotification"]::before,
+div[data-baseweb="toast"]::before {
+    background: none !important;
+    display: none !important;
 }
 
 /* Links dentro do alerta */
