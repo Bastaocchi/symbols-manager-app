@@ -65,6 +65,8 @@ th:nth-child(5), td:nth-child(5) {
     font-size: 22px !important;
     color: #ffcc00 !important;
 }
+th:nth-child(6), td:nth-child(6) { width: 120px !important; }
+th:nth-child(7), td:nth-child(7) { width: 100px !important; }
 div.stButton > button {
     background-color: #2a2f36 !important;
     color: #ffffff !important;
