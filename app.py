@@ -37,14 +37,14 @@ table {
 th {
     background-color: #2a323b !important;
     color: white !important;
-    font-size: 22px !important;   /* aumentado */
+    font-size: 28px !important;   /* aumentado de 22px para 28px */
     font-weight: bold !important;
     text-align: center !important;
     padding: 14px !important;
 }
 /* Células */
 td {
-    font-size: 20px !important;   /* aumentado */
+    font-size: 26px !important;   /* aumentado de 20px para 26px */
     text-align: center !important;
     color: #eee !important;
     padding: 12px !important;
@@ -64,7 +64,7 @@ th:nth-child(3), td:nth-child(3) { width: 220px !important; }
 th:nth-child(4), td:nth-child(4) { width: 120px !important; }
 th:nth-child(5), td:nth-child(5) {
     width: 220px !important;
-    font-size: 24px !important;   /* destaque ainda maior */
+    font-size: 28px !important;   /* aumentado de 24px para 28px */
     color: #ffcc00 !important;
 }
 div.stButton > button {
