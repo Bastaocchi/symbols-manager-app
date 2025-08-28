@@ -88,6 +88,12 @@ div.stButton > button:hover {
 .stTabs [data-baseweb="tab-list"] button[aria-selected="false"] {
     color: #aaa !important;
 }
+
+/* 🔽 Reduz espaço no topo (traz o título mais pra cima) */
+section.main > div:first-child {
+    padding-top: 0rem !important;
+    margin-top: -2rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -140,7 +146,7 @@ def update_tag(symbol, tag_value):
 # MAIN APP
 # =========================
 def main():
-    # 🔽 Título menor, alinhado à esquerda
+    # 🔽 Título menor, alinhado à esquerda e puxado mais pra cima
     st.markdown('<h1 style="text-align:left; font-size:2rem; margin-bottom:1rem;">Gerenciador de Símbolos</h1>', unsafe_allow_html=True)
 
     df = load_symbols()
