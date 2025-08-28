@@ -150,15 +150,6 @@ def main():
     df = load_symbols()
 
     st.markdown("---")
-    st.subheader("Resumo dos Dados")
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1: st.metric("Total de Símbolos", len(df))
-    with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
-    with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
-    with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
-    with col5: st.metric("Status", "Carregado", delta="Online")
-
-    st.markdown("---")
     tab1, tab2, tab3 = st.tabs(["Visualizar", "Adicionar", "Tags"])
 
     # TAB VISUALIZAR
@@ -200,6 +191,16 @@ def main():
 
         st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
         st.dataframe(filtered_df, use_container_width=True, height=800)
+
+        # 🔽 Resumo agora embaixo da tabela
+        st.markdown("---")
+        st.subheader("Resumo dos Dados")
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1: st.metric("Total de Símbolos", len(df))
+        with col2: st.metric("Setores SPDR", len(df['Sector_SPDR'].dropna().unique()) if 'Sector_SPDR' in df.columns else 0)
+        with col3: st.metric("Indústrias", len(df['TradingView_Industry'].dropna().unique()) if 'TradingView_Industry' in df.columns else 0)
+        with col4: st.metric("Com Tags", len(df[df['TAGS'].str.strip() != ""]) if 'TAGS' in df.columns else 0)
+        with col5: st.metric("Status", "Carregado", delta="Online")
 
     # TAB ADICIONAR (rascunho)
     with tab2:
