@@ -183,6 +183,9 @@ def main():
                 ["Todas"] + sorted([t for t in df['TAGS'].dropna().unique() if t.strip()]) if 'TAGS' in df.columns else ["Todas"]
             )
 
+        # --- Busca global ---
+        search_term = st.text_input("🔍 Buscar em qualquer coluna:")
+
         # --- Aplicar filtros ---
         filtered_df = df.copy()
         if sector_filter != "Todos" and 'Sector_SPDR' in filtered_df.columns:
@@ -191,9 +194,12 @@ def main():
             filtered_df = filtered_df[filtered_df['ETF_Symbol'] == etf_filter]
         if tag_filter != "Todas" and 'TAGS' in filtered_df.columns:
             filtered_df = filtered_df[filtered_df['TAGS'] == tag_filter]
+        if search_term:
+            mask = filtered_df.apply(lambda row: row.astype(str).str.contains(search_term, case=False, na=False)).any(axis=1)
+            filtered_df = filtered_df[mask]
 
         st.info(f"Mostrando {len(filtered_df)} de {len(df)} símbolos")
-        st.dataframe(filtered_df)
+        st.dataframe(filtered_df, use_container_width=True, height=800)
 
     # TAB ADICIONAR (rascunho)
     with tab2:
