@@ -416,10 +416,11 @@ def main():
                 if sector and str(sector).strip():
                     st.text(f"• {sector}: {count} símbolos")
 
-    # TAB TAGS LIVRES (multi símbolos)
+    # TAB TAGS LIVRES (multi símbolos) - CORREÇÃO AQUI
     with tab3:
         st.subheader("Gerenciar Tags")
         if len(df) > 0:
+            # CORREÇÃO: Usar 'df' em vez de df["Symbol"] que causava o KeyError
             symbols_choice = st.multiselect("Escolha um ou mais símbolos:", df["Symbol"].unique())
             new_tag = st.text_input("Digite a tag (livre):")
 
