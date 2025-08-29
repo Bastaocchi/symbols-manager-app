@@ -217,7 +217,7 @@ def update_tag(symbol, tag_value):
         return
 
     try:
-        row_idx = df.index[df["Symbol"] == symbol][0] + 2  # +2 por causa do header
+        row_idx = df.index[df["symbols"] == symbol][0] + 2  # +2 por causa do header - CORRIGIDO: Symbol -> symbols
         col_idx = df.columns.get_loc("TAGS") + 1
         worksheet.update_cell(row_idx, col_idx, tag_value)
         st.success(f"Tag '{tag_value}' adicionada ao símbolo {symbol}")
@@ -367,12 +367,12 @@ def main():
                     st.error("❌ Campo 'Símbolo' é obrigatório!")
                 elif not company.strip():
                     st.error("❌ Campo 'Nome da Empresa' é obrigatório!")
-                elif symbol.upper() in df['Symbol'].str.upper().values:
+                elif symbol.upper() in df['symbols'].str.upper().values:  # CORRIGIDO: Symbol -> symbols
                     st.error(f"❌ Símbolo '{symbol.upper()}' já existe na planilha!")
                 else:
                     # Preparar dados para adicionar
                     symbol_data = {
-                        'Symbol': symbol.upper().strip(),
+                        'symbols': symbol.upper().strip(),  # CORRIGIDO: Symbol -> symbols
                         'Company': company.strip(),
                         'TradingView_Sector': tradingview_sector.strip(),
                         'TradingView_Industry': tradingview_industry.strip(),
@@ -416,12 +416,11 @@ def main():
                 if sector and str(sector).strip():
                     st.text(f"• {sector}: {count} símbolos")
 
-    # TAB TAGS LIVRES (multi símbolos) - CORREÇÃO AQUI
+    # TAB TAGS LIVRES (multi símbolos) - ÚNICA LINHA CORRIGIDA
     with tab3:
         st.subheader("Gerenciar Tags")
         if len(df) > 0:
-            # CORREÇÃO: Usar 'df' em vez de df["Symbol"] que causava o KeyError
-            symbols_choice = st.multiselect("Escolha um ou mais símbolos:", df["Symbol"].unique())
+            symbols_choice = st.multiselect("Escolha um ou mais símbolos:", df["symbols"].unique())  # CORRIGIDO: Symbol -> symbols
             new_tag = st.text_input("Digite a tag (livre):")
 
             if st.button("Aplicar Tag"):
@@ -480,8 +479,8 @@ def main():
             st.text(f"• Símbolos sem tags: {len(df[df['TAGS'].str.strip() == '']) if 'TAGS' in df.columns else 0}")
             if 'Company' in df.columns:
                 st.text(f"• Empresas únicas: {len(df['Company'].dropna().unique())}")
-            if 'Symbol' in df.columns:
-                st.text(f"• Símbolos únicos: {len(df['Symbol'].dropna().unique())}")
+            if 'symbols' in df.columns:  # CORRIGIDO: Symbol -> symbols
+                st.text(f"• Símbolos únicos: {len(df['symbols'].dropna().unique())}")
 
 if __name__ == "__main__":
     main()
