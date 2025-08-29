@@ -1,6 +1,4 @@
-if not SYMBOLS:
-            st.error("❌ Nenhum símbolo encontrado na coluna 'symbols'")
-            returnimport streamlit as st
+import streamlit as st
 import yfinance as yf
 import pandas as pd
 import time
@@ -124,37 +122,12 @@ def get_stock_data(symbol, period="1y", interval="1d"):
         return None
 
 
-# 🔹 Carregar símbolos do GitHub - VERSÃO CORRIGIDA
+# 🔹 Carregar símbolos do GitHub
 @st.cache_data(ttl=3600)
 def load_symbols_from_github():
-    try:
-        url = "https://raw.githubusercontent.com/Bastaocchi/stock-scanner-app/main/symbols.csv"
-        df = pd.read_csv(url)
-        return df
-    except Exception as e:
-        st.error(f"❌ Erro ao carregar símbolos: {str(e)}")
-        return None
-
-
-# 🔹 FUNÇÃO SEGURA PARA ENCONTRAR COLUNA DE SÍMBOLOS
-def find_symbol_column(df):
-    """Encontra a coluna que contém os símbolos de forma segura"""
-    if df is None or df.empty:
-        return None
-        
-    possible_names = ['Symbol', 'symbol', 'SYMBOL', 'symbols', 'Symbols', 'ticker', 'Ticker', 'stock', 'Stock']
-    
-    # Primeiro, procurar por nomes exatos
-    for name in possible_names:
-        if name in df.columns:
-            return name
-    
-    # Se não encontrar, procurar por padrões nas colunas
-    for col in df.columns:
-        if any(keyword in col.lower() for keyword in ['symbol', 'ticker', 'stock']):
-            return col
-    
-    return None
+    url = "https://raw.githubusercontent.com/Bastaocchi/stock-scanner-app/main/symbols.csv"
+    df = pd.read_csv(url)
+    return df
 
 
 def render_results_table(df):
@@ -173,164 +146,73 @@ def render_results_table(df):
 
 
 # =========================
-# MAIN - VERSÃO CORRIGIDA
+# MAIN
 # =========================
 def main():
     st.markdown('<h2 style="color:#ccc;">🎯 Scanner de Setups (Estilo Gerenciador)</h2>', unsafe_allow_html=True)
 
-    # Criar abas
-    tab1, tab2 = st.tabs(["📊 Scanner", "🏷️ Tags"])
-    
-    with tab1:
-        # Carregar lista de símbolos do GitHub
-        df_symbols = load_symbols_from_github()
-        
-        if df_symbols is None:
-            st.error("❌ Não foi possível carregar os símbolos do GitHub")
-            return
-            
-        if df_symbols.empty:
-            st.error("❌ Arquivo de símbolos está vazio")
-            return
+    # Carregar lista de símbolos do GitHub
+    df_symbols = load_symbols_from_github()
+    df_symbols.columns = df_symbols.columns.str.strip().str.lower()
 
-        # Limpar nomes das colunas (remover espaços extras)
-        df_symbols.columns = df_symbols.columns.str.strip()
-        
-        st.info(f"✅ Carregados {len(df_symbols)} símbolos do GitHub")
-        # Usar a coluna 'symbols' diretamente (baseado na estrutura do seu CSV)
-        if 'symbols' not in df_symbols.columns:
-            st.error(f"❌ Coluna 'symbols' não encontrada. Colunas disponíveis: {list(df_symbols.columns)}")
-            return
-            
-        SYMBOLS = df_symbols['symbols'].dropna().tolist()
+    st.info(f"✅ Carregados {len(df_symbols)} símbolos do GitHub")
 
-        if st.button("🚀 Rodar Scanner"):
-            results = []
+    if "symbols" in df_symbols.columns:
+        SYMBOLS = df_symbols["symbols"].dropna().tolist()
+    elif "symbol" in df_symbols.columns:
+        SYMBOLS = df_symbols["symbol"].dropna().tolist()
+    else:
+        st.error("❌ O CSV precisa ter uma coluna chamada 'symbols' ou 'symbol'")
+        return
 
-            # Barra de progresso discreta
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+    if st.button("🚀 Rodar Scanner"):
+        results = []
 
-            for i, symbol in enumerate(SYMBOLS):
-                df = get_stock_data(symbol)
-                if df is None or len(df) < 3:
-                    continue
+        # Barra de progresso discreta
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-                found, info = detect_inside_bar(df)
-                if found:
-                    results.append({
-                        "Symbol": symbol,
-                        "Setup": info["type"],
-                        "Price": f"${info['price']:.2f}",
-                        "Day%": f"{info['day_change']:.2f}%"
-                    })
-                    continue
+        for i, symbol in enumerate(SYMBOLS):
+            df = get_stock_data(symbol)
+            if df is None or len(df) < 3:
+                continue
 
-                found, info = detect_hammer_setup(df)
-                if found:
-                    results.append({
-                        "Symbol": symbol,
-                        "Setup": info["type"],
-                        "Price": f"${info['price']:.2f}",
-                        "Day%": f"{info['day_change']:.2f}%"
-                    })
+            found, info = detect_inside_bar(df)
+            if found:
+                results.append({
+                    "Symbol": symbol,
+                    "Setup": info["type"],
+                    "Price": f"${info['price']:.2f}",
+                    "Day%": f"{info['day_change']:.2f}%"
+                })
+                continue
 
-                # Atualizar progresso + setups em tempo real
-                progress = (i + 1) / len(SYMBOLS)
-                progress_bar.progress(progress)
-                status_text.text(
-                    f"⏳ Processando {i+1}/{len(SYMBOLS)} símbolos... | 🎯 {len(results)} setups encontrados"
-                )
-                time.sleep(0.05)  # permite a UI atualizar
+            found, info = detect_hammer_setup(df)
+            if found:
+                results.append({
+                    "Symbol": symbol,
+                    "Setup": info["type"],
+                    "Price": f"${info['price']:.2f}",
+                    "Day%": f"{info['day_change']:.2f}%"
+                })
 
-            # Limpar barra no final
-            progress_bar.empty()
-            status_text.empty()
+            # Atualizar progresso + setups em tempo real
+            progress = (i + 1) / len(SYMBOLS)
+            progress_bar.progress(progress)
+            status_text.text(
+                f"⏳ Processando {i+1}/{len(SYMBOLS)} símbolos... | 🎯 {len(results)} setups encontrados"
+            )
+            time.sleep(0.05)  # permite a UI atualizar
 
-            if results:
-                df_results = pd.DataFrame(results)
-                render_results_table(df_results)
-            else:
-                st.warning("❌ Nenhum setup encontrado.")
-    
-    with tab2:
-        st.markdown("### 🏷️ Gerenciador de Tags")
-        
-        # Carregar símbolos para a aba Tags
-        df_symbols = load_symbols_from_github()
-        
-        if df_symbols is None or df_symbols.empty:
-            st.error("❌ Não foi possível carregar os símbolos")
-            return
-            
-        # Limpar nomes das colunas
-        df_symbols.columns = df_symbols.columns.str.strip()
-        
-        # Verificar se as colunas necessárias existem
-        if 'symbols' not in df_symbols.columns:
-            st.error(f"❌ Coluna 'symbols' não encontrada. Colunas disponíveis: {list(df_symbols.columns)}")
-            return
-        
-        try:
-            # Multiselect para escolher símbolos
-            unique_symbols = df_symbols['symbols'].dropna().unique()
-            
-            if len(unique_symbols) == 0:
-                st.warning("⚠️ Nenhum símbolo encontrado")
-                return
-                
-            symbols_choice = st.multiselect("Escolha um ou mais símbolos:", unique_symbols)
-            
-            if symbols_choice:
-                st.success(f"✅ Selecionados {len(symbols_choice)} símbolos")
-                
-                # Filtrar dados para símbolos selecionados
-                filtered_df = df_symbols[df_symbols['symbols'].isin(symbols_choice)]
-                
-                # Mostrar informações dos símbolos selecionados
-                st.markdown("### 📋 Informações dos Símbolos Selecionados")
-                
-                # Criar uma tabela mais limpa
-                display_columns = ['symbols', 'Company', 'TradingView_Sector', 'TradingView_Industry', 'TAGS']
-                available_columns = [col for col in display_columns if col in filtered_df.columns]
-                
-                if available_columns:
-                    st.dataframe(
-                        filtered_df[available_columns], 
-                        use_container_width=True,
-                        hide_index=True
-                    )
-                
-                # Opções adicionais para gerenciar tags
-                st.markdown("### 🏷️ Gerenciar Tags")
-                
-                if 'TAGS' in df_symbols.columns:
-                    # Mostrar tags existentes
-                    existing_tags = []
-                    for symbol in symbols_choice:
-                        symbol_row = df_symbols[df_symbols['symbols'] == symbol]
-                        if not symbol_row.empty and pd.notna(symbol_row['TAGS'].iloc[0]):
-                            existing_tags.extend(str(symbol_row['TAGS'].iloc[0]).split(','))
-                    
-                    unique_existing_tags = list(set([tag.strip() for tag in existing_tags if tag.strip()]))
-                    
-                    if unique_existing_tags:
-                        st.write("**Tags existentes nos símbolos selecionados:**")
-                        st.write(", ".join(unique_existing_tags))
-                    
-                    # Campo para adicionar novas tags
-                    new_tags = st.text_input("Adicionar novas tags (separadas por vírgula):")
-                    
-                    if st.button("💾 Salvar Tags") and new_tags:
-                        st.info("💡 **Nota:** Esta é uma demonstração. Em uma versão completa, as tags seriam salvas no arquivo CSV.")
-                        st.write(f"Tags que seriam adicionadas: {new_tags}")
-                
-                
-        except Exception as e:
-            st.error(f"❌ Erro ao processar símbolos: {str(e)}")
-            st.write("**Informações de debug:**")
-            st.write(f"Colunas: {list(df_symbols.columns)}")
-            st.write(f"Tipos das colunas: {df_symbols.dtypes.to_dict()}")
+        # Limpar barra no final
+        progress_bar.empty()
+        status_text.empty()
+
+        if results:
+            df_results = pd.DataFrame(results)
+            render_results_table(df_results)
+        else:
+            st.warning("❌ Nenhum setup encontrado.")
 
 
 if __name__ == "__main__":
